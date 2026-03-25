@@ -32,6 +32,8 @@ Upload designs you love → answer visual preference questions → compare AI-ge
 
 <br />
 
+### 🔗 [**Live Demo →**](https://design-taste-demo.up.railway.app)
+
 [**Quickstart**](#-quickstart) · [**Features**](#-features) · [**How It Works**](#-how-it-works) · [**Sample Output**](#-sample-output) · [**Contributing**](#-contributing) · [**Roadmap**](#-roadmap)
 
 </div>
