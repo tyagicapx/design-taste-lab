@@ -130,14 +130,14 @@ Open **[http://localhost:3000](http://localhost:3000)** and start your first cal
 
 ```
 ┌─────────────────┐     ┌──────────────────┐     ┌───────────────────┐     ┌──────────────────┐
-│                  │     │                  │     │                   │     │                  │
-│   📸 Upload     │────▶│   🔬 Analyze     │────▶│   🎯 Calibrate   │────▶│   📄 Compile     │
-│                  │     │                  │     │                   │     │                  │
-│  Screenshots     │     │  Parse images    │     │  Questionnaire    │     │  12-section      │
-│  Website URLs    │     │  Classify type   │     │  Visual probes    │     │  markdown spec   │
-│  Pinterest       │     │  Cluster taste   │     │  Side-by-side     │     │  with hex, px,   │
-│                  │     │  Decompose axes  │     │  Adaptive rounds  │     │  fonts, prompts  │
-│                  │     │                  │     │                   │     │                  │
+│                 │     │                  │     │                   │     │                  │
+│   📸 Upload     │────▶│   🔬 Analyze     │────▶ │   🎯 Calibrate    │────▶│   📄 Compile     │
+│                 │     │                  │     │                   │     │                  │
+│  Screenshots    │     │  Parse images    │     │  Questionnaire    │     │  12-section      │
+│  Website URLs   │     │  Classify type   │     │  Visual probes    │     │  markdown spec   │
+│  Pinterest      │     │  Cluster taste   │     │  Side-by-side     │     │  with hex, px,   │
+│                 │     │  Decompose axes  │     │  Adaptive rounds  │     │  fonts, prompts  │
+│                 │     │                  │     │                   │     │                  │
 └─────────────────┘     └──────────────────┘     └───────────────────┘     └──────────────────┘
 ```
 
