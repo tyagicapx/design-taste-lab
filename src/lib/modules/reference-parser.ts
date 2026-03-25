@@ -27,8 +27,17 @@ async function parseOneReference(
   imagePath: string,
   annotations: unknown
 ): Promise<ReferenceAnalysis> {
-  const absolutePath = path.join(process.cwd(), 'public', imagePath);
-  const { base64, mediaType } = imageToBase64(absolutePath);
+  const IS_DEMO = process.env.DEMO_MODE === 'true';
+
+  // In demo mode, skip file read — the mock provider returns canned data anyway
+  let base64 = '';
+  let mediaType = 'image/png';
+  if (!IS_DEMO) {
+    const absolutePath = path.join(process.cwd(), 'public', imagePath);
+    const imageData = imageToBase64(absolutePath);
+    base64 = imageData.base64;
+    mediaType = imageData.mediaType;
+  }
 
   const systemPrompt = buildSystemPrompt();
   const userPrompt = buildUserPrompt(

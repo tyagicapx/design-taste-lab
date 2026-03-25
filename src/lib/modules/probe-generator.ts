@@ -226,7 +226,11 @@ export async function generateProbes(
   //
   // Round 1: Mix of matching + contrasting sites (max spread)
   // Round 2-3: Only sites matching the emerging taste direction
+  //
+  // DISABLED in demo mode (no Puppeteer available on demo deploy)
   // ────────────────────────────────────────────────────────────────────
+
+  if (process.env.DEMO_MODE === 'true') return; // Skip real-site probes in demo
 
   (async () => {
     try {
