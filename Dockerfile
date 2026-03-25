@@ -1,7 +1,10 @@
 FROM node:20-slim
 
-# Install Chromium dependencies for Puppeteer
+# Install build tools for native modules (better-sqlite3) + Chromium for Puppeteer
 RUN apt-get update && apt-get install -y \
+    python3 \
+    make \
+    g++ \
     chromium \
     fonts-liberation \
     libasound2 \
@@ -30,12 +33,14 @@ WORKDIR /app
 
 # Copy package files first for layer caching
 COPY package.json package-lock.json ./
-RUN npm ci --production=false
+
+# Install ALL deps (including devDeps for build) and rebuild native modules
+RUN npm ci && npm rebuild better-sqlite3
 
 # Copy rest of the app
 COPY . .
 
-# Build
+# Build Next.js
 RUN npm run build
 
 # Create data directory for SQLite
