@@ -146,7 +146,7 @@ function NewSessionContent() {
   );
 
   async function handleStartAnalysis() {
-    if (!sessionId || references.length < 3) return;
+    if (!sessionId || references.length < 1) return;
     setStarting(true);
 
     await fetch(`/api/sessions/${sessionId}`, {
@@ -174,7 +174,7 @@ function NewSessionContent() {
             </svg>
             Back
           </button>
-          {references.length >= 3 && (
+          {references.length >= 1 && (
             <button
               onClick={handleStartAnalysis}
               disabled={starting}
