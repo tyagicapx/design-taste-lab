@@ -292,8 +292,8 @@ export async function generateProbes(
  * or abstract design tastes — which is the majority of cases.
  */
 function detectImageryTasteSignal(session: {
-  tasteMap: Record<string, unknown> | null;
-  onboardingData: Record<string, unknown> | null;
+  tasteMap: unknown;
+  onboardingData: unknown;
   clusters: unknown;
 }): boolean {
   let imageryScore = 0;

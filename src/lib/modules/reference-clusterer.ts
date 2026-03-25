@@ -1,3 +1,4 @@
+import type { SurfaceType } from '../types';
 import { textProvider } from '../ai/registry';
 import { trackApiCall } from '../ai/token-tracker';
 import {
@@ -39,7 +40,7 @@ export async function clusterReferences(sessionId: string): Promise<ClusteringRe
         description: 'Single reference — no clustering possible',
         memberRefIds: refsWithAnalysis.map((r) => r.id),
         dominanceScore: 1.0,
-        surfaceTypes: refsWithAnalysis.map((r) => (r.surfaceType as string) || 'unknown'),
+        surfaceTypes: refsWithAnalysis.map((r) => ((r.surfaceType || 'unknown') as SurfaceType)),
       }],
       outlierRefIds: [],
       contradictions: [],
