@@ -1,0 +1,11 @@
+node_modules
+.next
+.git
+.env.local
+data/
+*.db
+*.db-wal
+*.db-shm
+public/uploads/
+.DS_Store
+.claude/
