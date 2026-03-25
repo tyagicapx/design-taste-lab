@@ -1,23 +1,63 @@
 {
-  "name": "taste-calibration-lab",
-  "version": "0.1.0",
-  "private": true,
+  "name": "design-taste-lab",
+  "version": "1.0.0",
+  "description": "Extract, test, and codify your design taste into a reusable spec. AI-powered calibration with visual probes.",
+  "license": "MIT",
+  "author": "Design Taste Lab Contributors",
+  "homepage": "https://github.com/design-taste-lab/design-taste-lab",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/design-taste-lab/design-taste-lab.git"
+  },
+  "bugs": {
+    "url": "https://github.com/design-taste-lab/design-taste-lab/issues"
+  },
+  "keywords": [
+    "design-tools",
+    "ui-design",
+    "design-systems",
+    "design-language",
+    "ai",
+    "claude",
+    "nextjs",
+    "typescript",
+    "taste-extraction",
+    "web-design",
+    "product-design",
+    "open-source"
+  ],
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "setup": "node scripts/setup.js",
+    "db:push": "drizzle-kit push"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.80.0",
+    "@tailwindcss/typography": "^0.5.19",
+    "better-sqlite3": "^12.8.0",
+    "drizzle-orm": "^0.45.1",
+    "nanoid": "^5.1.7",
     "next": "16.2.1",
+    "openai": "^6.32.0",
+    "puppeteer": "^24.40.0",
     "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react-dom": "19.2.4",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "drizzle-kit": "^0.31.10",
     "eslint": "^9",
     "eslint-config-next": "16.2.1",
     "tailwindcss": "^4",

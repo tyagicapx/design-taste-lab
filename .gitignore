@@ -30,8 +30,9 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# env files
 .env*
+!.env.example
 
 # vercel
 .vercel
@@ -39,3 +40,21 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# SQLite database (runtime data)
+data/
+*.db
+*.db-wal
+*.db-shm
+
+# User uploads (runtime data)
+public/uploads/
+
+# Claude Code IDE config (personal)
+.claude/
+
+# Design exploration assets (not app code)
+landing page - image grid/
+
+# Internal planning docs
+design-taste-extractor-idea.md
