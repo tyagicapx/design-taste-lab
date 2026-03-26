@@ -250,7 +250,7 @@ export default function ComparePage() {
                   results[currentIdx]?.choice === 'left' ? 'shadow-[0_0_0_2px_var(--accent)]' : ''
                 }`}
               >
-                <div className="relative h-[400px] overflow-hidden bg-white">
+                <div className="pointer-events-none relative h-[400px] overflow-hidden bg-white">
                   <ProbeIframe html={currentPair.left.content} label={currentPair.left.label} />
                 </div>
                 <div className="p-5">
@@ -266,7 +266,7 @@ export default function ComparePage() {
                   results[currentIdx]?.choice === 'right' ? 'shadow-[0_0_0_2px_var(--accent)]' : ''
                 }`}
               >
-                <div className="relative h-[400px] overflow-hidden bg-white">
+                <div className="pointer-events-none relative h-[400px] overflow-hidden bg-white">
                   <ProbeIframe html={currentPair.right.content} label={currentPair.right.label} />
                 </div>
                 <div className="p-5">
