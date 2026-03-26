@@ -40,6 +40,9 @@ RUN npm ci && npm rebuild better-sqlite3
 # Copy rest of the app
 COPY . .
 
+# NEXT_PUBLIC_ vars must be set BEFORE build (baked into client JS bundle)
+ENV NEXT_PUBLIC_DEMO_MODE=true
+
 # Build Next.js
 RUN npm run build
 
@@ -52,6 +55,5 @@ EXPOSE 3000
 ENV PORT=3000
 ENV NODE_ENV=production
 ENV DEMO_MODE=true
-ENV NEXT_PUBLIC_DEMO_MODE=true
 
 CMD ["npm", "start"]
