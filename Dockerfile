@@ -52,5 +52,6 @@ EXPOSE 3000
 ENV PORT=3000
 ENV NODE_ENV=production
 ENV DEMO_MODE=true
+ENV NEXT_PUBLIC_DEMO_MODE=true
 
 CMD ["npm", "start"]
