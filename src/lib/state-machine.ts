@@ -4,7 +4,7 @@ const VALID_TRANSITIONS: Record<SessionStatus, SessionStatus[]> = {
   uploading: ['onboarding', 'annotating', 'analyzing'], // V2: can go to onboarding first
   onboarding: ['uploading', 'annotating', 'analyzing'], // V2: after onboard, go to upload
   annotating: ['analyzing'],
-  analyzing: ['reviewing', 'round_1_questionnaire'], // V2: reviewing preferred, but direct skip allowed (demo mode)
+  analyzing: ['reviewing'], // V2: goes to review instead of directly to round 1
   reviewing: ['round_1_questionnaire'], // V2: after cluster/outlier review
   round_1_questionnaire: ['round_1_probes'],
   round_1_probes: ['round_1_compare', 'round_2_questionnaire', 'compiling'], // V2: can skip to compile if confident

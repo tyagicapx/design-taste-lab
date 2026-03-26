@@ -230,8 +230,6 @@ export async function generateProbes(
   // DISABLED in demo mode (no Puppeteer available on demo deploy)
   // ────────────────────────────────────────────────────────────────────
 
-  if (process.env.DEMO_MODE === 'true') return; // Skip real-site probes in demo
-
   (async () => {
     try {
       const tasteMap = session.tasteMap as Record<

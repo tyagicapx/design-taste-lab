@@ -3,15 +3,12 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 
-const IS_DEMO = process.env.NEXT_PUBLIC_DEMO_MODE === 'true';
-
 export default function AnalyzePage() {
   const params = useParams();
   const router = useRouter();
   const sessionId = params.id as string;
   const [status, setStatus] = useState('Starting analysis...');
   const [step, setStep] = useState(0);
-  const [demoReady, setDemoReady] = useState(false);
 
   useEffect(() => {
     // Kick off analysis
@@ -21,7 +18,7 @@ export default function AnalyzePage() {
       body: JSON.stringify({ sessionId }),
     });
 
-    // Poll for completion (real mode)
+    // Poll for completion
     const interval = setInterval(async () => {
       const res = await fetch(`/api/sessions/${sessionId}`);
       const data = await res.json();
@@ -36,7 +33,7 @@ export default function AnalyzePage() {
       }
     }, 2000);
 
-    // Animate steps
+    // Animate progress steps
     const steps = [
       'Parsing references...',
       'Classifying surface types...',
@@ -50,28 +47,13 @@ export default function AnalyzePage() {
       i = Math.min(i + 1, steps.length - 1);
       setStep(i);
       setStatus(steps[i]);
-
-      // In demo mode, show "ready" after all steps animate
-      if (i >= steps.length - 1) {
-        setTimeout(() => setDemoReady(true), 1500);
-      }
-    }, 1500); // Faster animation for demo (1.5s per step)
+    }, 8000);
 
     return () => {
       clearInterval(interval);
       clearInterval(stepInterval);
     };
   }, [sessionId, router]);
-
-  async function handleDemoSkip() {
-    // Force transition to round_1_questionnaire
-    await fetch(`/api/sessions/${sessionId}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: 'round_1_questionnaire' }),
-    });
-    router.push(`/session/${sessionId}/round/1/questionnaire`);
-  }
 
   const steps = [
     'Parse references',
@@ -119,7 +101,7 @@ export default function AnalyzePage() {
               >
                 {s}
               </p>
-              {i === step && !demoReady && (
+              {i === step && (
                 <span className="ml-1 h-2 w-2 animate-pulse rounded-full bg-[var(--accent)]" />
               )}
             </div>
@@ -132,17 +114,7 @@ export default function AnalyzePage() {
             style={{ width: `${((step + 1) / steps.length) * 100}%` }}
           />
         </div>
-
-        {IS_DEMO && demoReady ? (
-          <button
-            onClick={handleDemoSkip}
-            className="mt-6 w-full rounded-2xl bg-[var(--accent)] px-8 py-4 text-base font-bold text-[var(--bg)] shadow-[var(--shadow-md)] transition-all duration-200 hover:bg-[var(--accent-hover)] hover:shadow-[var(--shadow-glow-accent)]"
-          >
-            Continue to Questions →
-          </button>
-        ) : (
-          <p className="mt-3 text-sm text-[var(--text-muted)]">{status}</p>
-        )}
+        <p className="mt-3 text-sm text-[var(--text-muted)]">{status}</p>
       </div>
     </div>
   );
