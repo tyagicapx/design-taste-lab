@@ -329,9 +329,9 @@ const MOCK_PREFERENCE_DELTA = JSON.stringify({
 });
 
 const MOCK_CONVERGENCE = JSON.stringify({
-  shouldContinue: true,
-  reason: 'Good signal on primary axes but need confirmation on surface warmth and type expression.',
-  overallConfidence: 0.72,
+  shouldContinue: false,
+  reason: 'Strong convergence achieved — demo mode completes after one round.',
+  overallConfidence: 0.78,
   lockedAxes: [
     'color_contrast', 'surface_containment', 'type_drama', 'type_scale',
     'surface_finish', 'color_accent',
