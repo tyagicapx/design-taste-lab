@@ -40,10 +40,9 @@ Upload designs you love → answer visual preference questions → compare AI-ge
 
 <br />
 
-<!-- TODO: Replace with actual screenshot after polishing UI -->
-<!-- <p align="center">
-  <img src="docs/assets/hero.png" alt="Design Taste Lab Screenshot" width="100%" />
-</p> -->
+<p align="center">
+  <img src="docs/assets/hero.gif" alt="Design Taste Lab Demo" width="100%" />
+</p>
 
 ---
 
