@@ -174,7 +174,9 @@ export default function ComparePage() {
     }
 
     // V2: Use convergence decision to determine next step
-    const shouldContinue = convergence?.shouldContinue ?? (roundNumber < 3);
+    // Demo mode: always stop after round 1
+    const isDemo = process.env.NEXT_PUBLIC_DEMO_MODE === 'true';
+    const shouldContinue = isDemo ? false : (convergence?.shouldContinue ?? (roundNumber < 3));
 
     if (shouldContinue && roundNumber < 3) {
       router.push(`/session/${sessionId}/round/${roundNumber + 1}/questionnaire`);
