@@ -28,6 +28,9 @@ export const sessions = sqliteTable('sessions', {
   // Output
   finalMarkdown: text('final_markdown'),
 
+  // CRIT-4: Processing mutex — prevents duplicate pipeline runs
+  isProcessing: integer('is_processing', { mode: 'boolean' }).notNull().default(false),
+
   // Timestamps
   createdAt: integer('created_at', { mode: 'timestamp' })
     .notNull()

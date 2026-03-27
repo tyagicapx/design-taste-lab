@@ -4,6 +4,11 @@ import path from 'path';
 import { nanoid } from 'nanoid';
 import { createReference } from '@/lib/db/queries';
 import { ensureUploadDir } from '@/lib/utils/image';
+import {
+  validateSessionId,
+  validateUploadedFiles,
+  stripExif,
+} from '@/lib/security';
 
 export async function POST(req: NextRequest) {
   const formData = await req.formData();
@@ -12,6 +17,14 @@ export async function POST(req: NextRequest) {
   if (!sessionId) {
     return NextResponse.json(
       { error: 'sessionId is required' },
+      { status: 400 }
+    );
+  }
+
+  // CRIT-3: Validate sessionId format (prevent path traversal)
+  if (!validateSessionId(sessionId)) {
+    return NextResponse.json(
+      { error: 'Invalid session ID format' },
       { status: 400 }
     );
   }
@@ -25,21 +38,39 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // HIGH-2: Server-side file validation (type, size, count)
+  const { valid, errors } = validateUploadedFiles(files);
+
+  if (valid.length === 0) {
+    return NextResponse.json(
+      { error: 'No valid files', details: errors },
+      { status: 400 }
+    );
+  }
+
   const uploadDir = ensureUploadDir(sessionId);
   const results: { id: string; filename: string; path: string }[] = [];
 
-  for (const file of files) {
+  for (const file of valid) {
     const ext = path.extname(file.name) || '.png';
     const savedName = `${nanoid()}${ext}`;
     const filePath = path.join(uploadDir, savedName);
     const relativePath = `/uploads/${sessionId}/${savedName}`;
 
     const bytes = await file.arrayBuffer();
-    await writeFile(filePath, Buffer.from(bytes));
+    let buffer = Buffer.from(bytes);
+
+    // HIGH-7: Strip EXIF metadata (GPS, device info, timestamps)
+    buffer = await stripExif(buffer);
+
+    await writeFile(filePath, buffer);
 
     const refId = createReference(sessionId, file.name, relativePath);
     results.push({ id: refId, filename: file.name, path: relativePath });
   }
 
-  return NextResponse.json({ references: results });
+  return NextResponse.json({
+    references: results,
+    ...(errors.length > 0 && { skipped: errors }),
+  });
 }

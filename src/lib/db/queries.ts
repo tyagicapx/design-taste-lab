@@ -52,6 +52,28 @@ export function listSessions() {
     .all();
 }
 
+/**
+ * CRIT-4 FIX: Atomically acquire processing lock.
+ * Returns true if lock acquired, false if already processing.
+ */
+export function acquireProcessingLock(id: string): boolean {
+  const result = db.update(sessions)
+    .set({ isProcessing: true, updatedAt: new Date() })
+    .where(and(eq(sessions.id, id), eq(sessions.isProcessing, false)))
+    .run();
+  return result.changes > 0;
+}
+
+/**
+ * CRIT-4 FIX: Release processing lock.
+ */
+export function releaseProcessingLock(id: string): void {
+  db.update(sessions)
+    .set({ isProcessing: false, updatedAt: new Date() })
+    .where(eq(sessions.id, id))
+    .run();
+}
+
 export function updateSessionStatus(id: string, newStatus: SessionStatus) {
   const session = getSession(id);
   if (!session) throw new Error(`Session ${id} not found`);

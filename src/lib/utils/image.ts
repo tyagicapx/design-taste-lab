@@ -26,7 +26,12 @@ export function imageToBase64(filePath: string): {
 }
 
 export function ensureUploadDir(sessionId: string): string {
-  const dir = path.join(process.cwd(), 'public', 'uploads', sessionId);
+  // CRIT-3: Defense-in-depth path traversal check
+  const baseDir = path.join(process.cwd(), 'public', 'uploads');
+  const dir = path.resolve(baseDir, sessionId);
+  if (!dir.startsWith(baseDir)) {
+    throw new Error('Invalid session ID — path traversal detected');
+  }
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
   }

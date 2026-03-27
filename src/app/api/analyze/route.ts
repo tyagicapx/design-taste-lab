@@ -5,37 +5,44 @@ import { clusterReferences } from '@/lib/modules/reference-clusterer';
 import { decomposeTaste } from '@/lib/modules/taste-decomposition';
 import { runCritic } from '@/lib/modules/internal-critic';
 import { generateQuestionnaire } from '@/lib/modules/questionnaire-engine';
-import { updateSessionStatus } from '@/lib/db/queries';
+import {
+  updateSessionStatus,
+  acquireProcessingLock,
+  releaseProcessingLock,
+} from '@/lib/db/queries';
+import { validateSessionId } from '@/lib/security';
 
 export async function POST(req: NextRequest) {
   const { sessionId } = await req.json();
 
+  // CRIT-3: Validate sessionId
+  if (!sessionId || !validateSessionId(sessionId)) {
+    return NextResponse.json({ error: 'Invalid session ID' }, { status: 400 });
+  }
+
+  // CRIT-4: Acquire processing lock — prevents duplicate pipeline runs
+  if (!acquireProcessingLock(sessionId)) {
+    return NextResponse.json(
+      { error: 'Analysis already in progress' },
+      { status: 409 }
+    );
+  }
+
   // Run async — don't block the response
   (async () => {
     try {
-      // Step 1: Parse all references (Claude Vision)
       await parseAllReferences(sessionId);
-
-      // Step 2 (V2): Classify surface types (landing page, web app, mobile, etc.)
       await classifyAllSurfaces(sessionId);
-
-      // Step 3 (V2): Cluster references into aesthetic families
       await clusterReferences(sessionId);
-
-      // Step 4: Decompose taste signals into 25 axes
       await decomposeTaste(sessionId);
-
-      // Step 5: Run internal critic (adversarial analysis)
       await runCritic(sessionId);
-
-      // Step 6: Generate Round 1 questionnaire
       await generateQuestionnaire(sessionId, 1);
-
-      // V2: Transition to reviewing state (show clusters before questionnaire)
       updateSessionStatus(sessionId, 'reviewing');
     } catch (error) {
       console.error('Analysis pipeline failed:', error);
-      // Session stays in 'analyzing' state — user can retry
+    } finally {
+      // CRIT-4: Always release lock, even on error
+      releaseProcessingLock(sessionId);
     }
   })();
 

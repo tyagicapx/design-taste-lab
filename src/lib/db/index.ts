@@ -32,6 +32,7 @@ sqlite.exec(`
     clusters TEXT,
     convergence_decision TEXT,
     final_markdown TEXT,
+    is_processing INTEGER NOT NULL DEFAULT 0,
     created_at INTEGER NOT NULL DEFAULT (unixepoch()),
     updated_at INTEGER NOT NULL DEFAULT (unixepoch())
   );
@@ -118,6 +119,13 @@ sqlite.exec(`
     created_at INTEGER NOT NULL DEFAULT (unixepoch())
   );
 `);
+
+// Migration: add is_processing column to existing DBs
+try {
+  sqlite.exec(`ALTER TABLE sessions ADD COLUMN is_processing INTEGER NOT NULL DEFAULT 0`);
+} catch {
+  // Column already exists — ignore
+}
 
 export const db = drizzle(sqlite, { schema });
 export { schema };
