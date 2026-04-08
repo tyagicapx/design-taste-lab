@@ -100,7 +100,7 @@ export default function CompilingPage() {
           Compiling Your Taste Spec
         </h1>
         <p className="mt-3 text-[var(--text-secondary)]">
-          Building your 11-section design language document...
+          Building your 12-section design language document...
         </p>
 
         {/* Steps */}
