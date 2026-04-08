@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
     const relativePath = `/uploads/${sessionId}/${savedName}`;
 
     const bytes = await file.arrayBuffer();
-    let buffer = Buffer.from(bytes);
+    let buffer: Buffer = Buffer.from(new Uint8Array(bytes));
 
     // HIGH-7: Strip EXIF metadata (GPS, device info, timestamps)
     buffer = await stripExif(buffer);
