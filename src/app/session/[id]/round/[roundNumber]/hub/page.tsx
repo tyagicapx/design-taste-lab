@@ -9,7 +9,6 @@ type ExtractionMethod =
   | 'drag_to_match'
   | 'steal_from_url'
   | 'probes'
-  | 'ref_pairing'
   | 'compare';
 
 interface RoundPlan {
@@ -20,7 +19,6 @@ interface RoundPlan {
 }
 
 const METHOD_LABELS: Record<ExtractionMethod, { label: string; emoji: string; description: string }> = {
-  ref_pairing: { label: 'Compare Your References', emoji: '🔀', description: 'Choose between your own uploaded designs' },
   whats_wrong: { label: "What's Wrong?", emoji: '🔍', description: 'Spot the deliberate flaw in each design' },
   drag_to_match: { label: 'Drag to Match', emoji: '🎚️', description: 'Slide between design extremes until it feels right' },
   steal_from_url: { label: 'Steal from a Site', emoji: '🏴‍☠️', description: 'Pick which design aspects to keep from a real site' },
@@ -30,7 +28,6 @@ const METHOD_LABELS: Record<ExtractionMethod, { label: string; emoji: string; de
 };
 
 const METHOD_ROUTES: Record<ExtractionMethod, string> = {
-  ref_pairing: 'ref-pairing',
   whats_wrong: 'whats-wrong',
   drag_to_match: 'drag-to-match',
   steal_from_url: '', // special case — not under /round/

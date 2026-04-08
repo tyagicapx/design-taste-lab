@@ -7,14 +7,13 @@
  * - Which methods have already been used
  * - Onboarding context (use case, experience)
  *
- * Available methods (7 total):
+ * Available methods (6 total):
  * 1. Questionnaire — plain-language preference Qs
  * 2. What's Wrong? — spot the deliberate flaw
  * 3. Drag to Match — slider between two extremes
  * 4. Steal from URL — dissect a site into keepable components
  * 5. HTML/CSS Probes — AI-generated full-page designs to rate
- * 6. Reference Pairing — pair user's own refs against each other
- * 7. Side-by-side Compare — A/B pairs
+ * 6. Side-by-side Compare — A/B pairs
  */
 
 import { getSession, getSessionReferences } from '../db/queries';
@@ -26,7 +25,6 @@ export type ExtractionMethod =
   | 'drag_to_match'
   | 'steal_from_url'
   | 'probes'
-  | 'ref_pairing'
   | 'compare';
 
 export interface RoundPlan {
@@ -109,41 +107,41 @@ export function planRound1(sessionId: string): RoundPlan {
   // Decision tree for Round 1
   if (refQuality.count >= 5 && refQuality.annotatedCount >= 3) {
     // SCENARIO: Focused refs, well-annotated
-    // → Ref Pairing first (leverage their own refs), What's Wrong (precision), light Questionnaire
-    methods.push('ref_pairing', 'whats_wrong', 'questionnaire');
-    methodConfigs.ref_pairing = { count: 5, targetAxes: uncertainAxes.slice(0, 5) };
-    methodConfigs.whats_wrong = { count: 3, targetAxes: uncertainAxes.slice(0, 3) };
+    // → What's Wrong (precision), Probes (visual), light Questionnaire
+    methods.push('whats_wrong', 'probes', 'questionnaire');
+    methodConfigs.whats_wrong = { count: 4, targetAxes: uncertainAxes.slice(0, 4) };
+    methodConfigs.probes = { count: 3, targetAxes: uncertainAxes.slice(0, 5) };
     methodConfigs.questionnaire = { count: 6, depth: 'light' };
-    reasoning = 'Focused, well-annotated references — leveraging ref pairing and precision testing';
+    reasoning = 'Focused, well-annotated references — precision testing with probes and flaw detection';
 
   } else if (refQuality.count >= 3 && refQuality.hasUrls) {
     // SCENARIO: Has URL refs — can use Steal from URL
-    // → Steal from URL, Ref Pairing, Questionnaire
-    methods.push('steal_from_url', 'ref_pairing', 'questionnaire');
+    // → Steal from URL, Questionnaire, Compare
+    methods.push('steal_from_url', 'questionnaire', 'compare');
     methodConfigs.steal_from_url = {};
-    methodConfigs.ref_pairing = { count: 4, targetAxes: uncertainAxes.slice(0, 4) };
     methodConfigs.questionnaire = { count: 8, depth: 'standard' };
+    methodConfigs.compare = { count: 4 };
     reasoning = 'URL references available — dissecting for precise component-level taste';
 
   } else if (refQuality.count >= 5 && refQuality.focusScore < 0.5) {
     // SCENARIO: Many scattered refs, contradictions
-    // → Ref Pairing (resolve contradictions), Questionnaire (fill gaps), Drag to Match (precise)
-    methods.push('ref_pairing', 'questionnaire', 'drag_to_match');
-    methodConfigs.ref_pairing = { count: 6, targetAxes: uncertainAxes.slice(0, 6) };
+    // → Questionnaire (fill gaps), Compare (resolve contradictions), Drag to Match (precise)
+    methods.push('questionnaire', 'compare', 'drag_to_match');
     methodConfigs.questionnaire = { count: 12, depth: 'deep' };
+    methodConfigs.compare = { count: 5 };
     methodConfigs.drag_to_match = { count: 3, targetAxes: uncertainAxes.slice(0, 3) };
-    reasoning = 'Scattered references with contradictions — resolving through pairing and deep questionnaire';
+    reasoning = 'Scattered references with contradictions — resolving through comparisons and deep questionnaire';
 
   } else {
     // SCENARIO: Default — few refs or unknown quality
-    // → Questionnaire (broad), Probes (visual), Ref Pairing (if enough refs)
+    // → Questionnaire (broad), Probes (visual), Drag to Match or Compare
     methods.push('questionnaire', 'probes');
     methodConfigs.questionnaire = { count: 15, depth: 'deep' };
     methodConfigs.probes = { count: 4 };
 
     if (refQuality.count >= 3) {
-      methods.push('ref_pairing');
-      methodConfigs.ref_pairing = { count: 4, targetAxes: uncertainAxes.slice(0, 4) };
+      methods.push('compare');
+      methodConfigs.compare = { count: 4 };
     } else {
       methods.push('drag_to_match');
       methodConfigs.drag_to_match = { count: 3, targetAxes: uncertainAxes.slice(0, 3) };

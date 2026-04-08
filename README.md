@@ -17,7 +17,7 @@
 
 ### Extract, test, and codify your design taste into a reusable AI-ready spec.
 
-Upload designs you love → run through 7 extraction methods (visual probes, "what's wrong?" challenges, drag-to-match spectrums, steal-from-URL decomposition, and more) → get a **complete design language document** with hex codes, font names, spacing values, and copy-pasteable prompts.
+Upload designs you love → run through 6 extraction methods (visual probes, "what's wrong?" challenges, drag-to-match spectrums, steal-from-URL decomposition, and more) → get a **complete design language document** with hex codes, font names, spacing values, and copy-pasteable prompts.
 
 <br />
 
@@ -66,7 +66,7 @@ Upload designs you love → run through 7 extraction methods (visual probes, "wh
 
 Every designer and developer has **taste** — a set of visual preferences that guide their work. But taste is trapped in your head. You can't share it, version it, or feed it to an AI tool.
 
-**Design Taste Lab** solves this by running you through a multi-method calibration process — questionnaires, spot-the-flaw challenges, spectrum sliders, URL decomposition, reference pairing, and side-by-side comparisons — that extracts your aesthetic preferences and compiles them into a structured, implementation-ready specification.
+**Design Taste Lab** solves this by running you through a multi-method calibration process — questionnaires, spot-the-flaw challenges, spectrum sliders, URL decomposition, and side-by-side comparisons — that extracts your aesthetic preferences and compiles them into a structured, implementation-ready specification.
 
 The output is a **12-section markdown document** with:
 - Exact hex codes, not "dark theme"
@@ -134,7 +134,7 @@ Open **[http://localhost:3000](http://localhost:3000)** and start your first cal
 │                 │     │                  │     │                   │     │                  │
 │   📸 Upload     │────▶│   🔬 Analyze     │────▶│   🎯 Calibrate    │────▶│   📄 Compile     │
 │                 │     │                  │     │                   │     │                  │
-│  Screenshots    │     │  Parse images    │     │  7 extraction     │     │  12-section      │
+│  Screenshots    │     │  Parse images    │     │  6 extraction     │     │  12-section      │
 │  Website URLs   │     │  Classify type   │     │  methods, mixed   │     │  markdown spec   │
 │  Pinterest      │     │  Cluster taste   │     │  with 394-image   │     │  with hex, px,   │
 │                 │     │  Decompose axes  │     │  screenshot lib   │     │  fonts, prompts  │
@@ -148,7 +148,7 @@ Open **[http://localhost:3000](http://localhost:3000)** and start your first cal
 2. **Upload references** — Screenshots, website URLs (auto-captured via Puppeteer), or Pinterest boards
 3. **Analyze** — Claude Vision parses each reference, classifies surface types, clusters by aesthetic family, positions your taste on 25 axes
 4. **Review clusters** — See how your references group, flag outliers, adjust classifications
-5. **Calibrate** — The round orchestrator selects from **7 extraction methods** based on your reference quality and confidence gaps:
+5. **Calibrate** — The round orchestrator selects from **6 extraction methods** based on your reference quality and confidence gaps:
 
 | Method | What It Does |
 |--------|-------------|
@@ -157,7 +157,6 @@ Open **[http://localhost:3000](http://localhost:3000)** and start your first cal
 | **What's Wrong?** | Spot deliberate design flaws — reveals your anti-goals and dealbreakers |
 | **Drag to Match** | Position sliders on a spectrum between two design extremes |
 | **Steal from URL** | Decompose a real website into keepable/rejectable components |
-| **Reference Pairing** | Rate your own uploaded references against each other |
 | **Side-by-Side Compare** | A/B pair choices mixing AI probes with real screenshots from the library |
 
 6. **Adaptive rounds** — 1-3 rounds, selected by the orchestrator based on per-axis confidence. Stops when average confidence hits 85%+
@@ -201,7 +200,7 @@ The final taste spec is a **12-section markdown document**. Here's what each sec
 - **Reference clustering** — Groups references by aesthetic family, detects outliers and conflicts
 
 ### Calibration Engine
-- **7 extraction methods** — Questionnaire, visual probes, what's wrong, drag to match, steal from URL, reference pairing, and side-by-side compare
+- **6 extraction methods** — Questionnaire, visual probes, what's wrong, drag to match, steal from URL, and side-by-side compare
 - **Round orchestrator** — Dynamically selects methods per round based on reference quality, axis confidence gaps, and prior method usage
 - **Screenshot library** — 394 curated screenshots across 13 categories (SaaS, creative, e-commerce, dashboards, mobile, dark mode, trending 2026...) with pre-scored taste axes, used in What's Wrong challenges and Compare pairs
 - **Surface-aware analysis** — Separate taste profiles for landing pages vs product UIs
@@ -270,7 +269,7 @@ The final taste spec is a **12-section markdown document**. Here's what each sec
 
 ## 🏗 Architecture
 
-The system is built around **14 core modules** that form a calibration pipeline:
+The system is built around **13 core modules** that form a calibration pipeline:
 
 ```
 src/lib/
@@ -286,13 +285,12 @@ src/lib/
 │   ├── whats-wrong            → Spot-the-flaw challenges (AI + library)
 │   ├── drag-to-match          → Spectrum slider matching
 │   ├── steal-from-url         → Decompose real websites into parts
-│   ├── ref-pairing            → Rate own references against each other
 │   ├── preference-delta       → Infers axis shifts from all responses
 │   ├── convergence-engine     → Cross-method signal fusion
 │   └── taste-compiler         → Synthesizes 12-section markdown spec
 │
 ├── library/               ← 394 curated screenshots with taste axis scores
-├── prompts/               ← 15 AI prompt templates (one per module)
+├── prompts/               ← 14 AI prompt templates (one per module)
 ├── services/              ← External integrations (Unsplash, Puppeteer, Apify)
 ├── ai/                    ← Provider abstraction (Claude, OpenAI, Gemini)
 ├── db/                    ← Schema, queries, migrations (Drizzle + SQLite)
