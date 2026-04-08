@@ -349,7 +349,7 @@ export function selectRelevantSites(
   diversify = true
 ): CuratedSite[] {
   // Filter by surface if specified
-  let pool = surface
+  const pool = surface
     ? CURATED_SITES.filter((s) => s.surface === surface || s.surface === 'both')
     : [...CURATED_SITES];
 

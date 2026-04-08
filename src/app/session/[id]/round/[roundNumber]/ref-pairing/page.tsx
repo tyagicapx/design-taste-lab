@@ -69,6 +69,12 @@ export default function RefPairingPage() {
     router.push(`/session/${sessionId}/round/${roundNumber}/questionnaire`);
   }
 
+  useEffect(() => {
+    if (!loading && pairs.length === 0) {
+      router.push(`/session/${sessionId}/round/${roundNumber}/questionnaire`);
+    }
+  }, [loading, pairs.length, router, sessionId, roundNumber]);
+
   if (loading) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center">
@@ -78,13 +84,7 @@ export default function RefPairingPage() {
     );
   }
 
-  useEffect(() => {
-    if (!loading && pairs.length === 0) {
-      router.push(`/session/${sessionId}/round/${roundNumber}/questionnaire`);
-    }
-  }, [loading, pairs.length, router, sessionId, roundNumber]);
-
-  if (pairs.length === 0 && !loading) {
+  if (pairs.length === 0) {
     return null;
   }
 

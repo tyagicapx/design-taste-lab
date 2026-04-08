@@ -215,6 +215,7 @@ export default function ProbesPage() {
                   style={{ height: expandedProbe === probe.id ? '600px' : '360px' }}
                 >
                   {probe.type === 'screenshot' ? (
+                    /* eslint-disable-next-line @next/next/no-img-element */
                     <img
                       src={probe.content}
                       alt={probe.label}

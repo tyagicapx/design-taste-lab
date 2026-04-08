@@ -12,7 +12,7 @@
  * - Feature/accent images: 0-2 smaller images (optional)
  */
 
-import { searchImages, triggerDownload, type ProbeImage } from './unsplash';
+import { searchImages, triggerDownload } from './unsplash';
 import { processProbeImage, buildImageEditPrompt } from './image-personality';
 
 export interface ProbeVisualRequest {

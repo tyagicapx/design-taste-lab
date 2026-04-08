@@ -89,6 +89,12 @@ export default function WhatsWrongPage() {
     router.push(`/session/${sessionId}/round/${roundNumber}/questionnaire`);
   }
 
+  useEffect(() => {
+    if (!loading && challenges.length === 0) {
+      router.push(`/session/${sessionId}/round/${roundNumber}/questionnaire`);
+    }
+  }, [loading, challenges.length, router, sessionId, roundNumber]);
+
   if (loading) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center">
@@ -99,13 +105,7 @@ export default function WhatsWrongPage() {
     );
   }
 
-  useEffect(() => {
-    if (!loading && challenges.length === 0) {
-      router.push(`/session/${sessionId}/round/${roundNumber}/questionnaire`);
-    }
-  }, [loading, challenges.length, router, sessionId, roundNumber]);
-
-  if (challenges.length === 0 && !loading) {
+  if (challenges.length === 0) {
     return null;
   }
 
@@ -152,6 +152,7 @@ export default function WhatsWrongPage() {
           <div className="overflow-hidden rounded-2xl bg-white shadow-[var(--shadow-md)]" style={{ height: '500px' }}>
             {current.libraryScreenshot ? (
               <div className="relative h-full w-full">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={current.libraryScreenshot.imagePath}
                   alt={current.libraryScreenshot.name}

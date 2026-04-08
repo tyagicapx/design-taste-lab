@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 
 const MAX_POLL_ATTEMPTS = 90; // 3 minutes at 2s intervals
@@ -13,13 +13,17 @@ export default function AnalyzePage() {
   const [step, setStep] = useState(0);
   const [pollError, setPollError] = useState(false);
   const attemptsRef = useRef(0);
+  const [retryCount, setRetryCount] = useState(0);
 
-  const startPolling = useCallback(() => {
+  function handleRetry() {
     attemptsRef.current = 0;
     setPollError(false);
     setStep(0);
     setStatus('Starting analysis...');
+    setRetryCount((c) => c + 1);
+  }
 
+  useEffect(() => {
     // Kick off analysis
     fetch('/api/analyze', {
       method: 'POST',
@@ -57,7 +61,7 @@ export default function AnalyzePage() {
     }, 2000);
 
     // Animate progress steps
-    const steps = [
+    const stepLabels = [
       'Parsing references...',
       'Classifying surface types...',
       'Clustering aesthetic families...',
@@ -67,21 +71,16 @@ export default function AnalyzePage() {
     ];
     let i = 0;
     const stepInterval = setInterval(() => {
-      i = Math.min(i + 1, steps.length - 1);
+      i = Math.min(i + 1, stepLabels.length - 1);
       setStep(i);
-      setStatus(steps[i]);
+      setStatus(stepLabels[i]);
     }, 8000);
 
     return () => {
       clearInterval(interval);
       clearInterval(stepInterval);
     };
-  }, [sessionId, router]);
-
-  useEffect(() => {
-    const cleanup = startPolling();
-    return cleanup;
-  }, [startPolling]);
+  }, [sessionId, router, retryCount]);
 
   const steps = [
     'Parse references',
@@ -150,7 +149,7 @@ export default function AnalyzePage() {
               Analysis is taking longer than expected.
             </p>
             <button
-              onClick={() => startPolling()}
+              onClick={handleRetry}
               className="mt-4 rounded-2xl bg-[var(--accent)] px-6 py-2.5 text-sm font-semibold text-[var(--bg)] transition-all hover:bg-[var(--accent-hover)]"
             >
               Retry

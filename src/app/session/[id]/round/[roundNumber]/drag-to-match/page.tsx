@@ -97,6 +97,13 @@ export default function DragToMatchPage() {
     router.push(`/session/${sessionId}/round/${roundNumber}/questionnaire`);
   }
 
+  // Must be before any early returns per rules-of-hooks
+  useEffect(() => {
+    if (!loading && sliders.length === 0) {
+      router.push(`/session/${sessionId}/round/${roundNumber}/questionnaire`);
+    }
+  }, [loading, sliders.length, router, sessionId, roundNumber]);
+
   if (loading) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center">
@@ -107,13 +114,7 @@ export default function DragToMatchPage() {
     );
   }
 
-  useEffect(() => {
-    if (!loading && sliders.length === 0) {
-      router.push(`/session/${sessionId}/round/${roundNumber}/questionnaire`);
-    }
-  }, [loading, sliders.length, router, sessionId, roundNumber]);
-
-  if (sliders.length === 0 && !loading) {
+  if (sliders.length === 0) {
     return null;
   }
 

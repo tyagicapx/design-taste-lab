@@ -23,6 +23,7 @@ export function AnnotationPanel({
   onSave,
   onClose,
 }: AnnotationPanelProps) {
+  const [prevRefId, setPrevRefId] = useState(reference.id);
   const [tags, setTags] = useState<string[]>(
     reference.annotations?.tags || []
   );
@@ -30,17 +31,19 @@ export function AnnotationPanel({
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
+  // Reset state when reference changes (derived state pattern — no useEffect needed)
+  if (reference.id !== prevRefId) {
+    setPrevRefId(reference.id);
+    setTags(reference.annotations?.tags || []);
+    setNote(reference.annotations?.note || '');
+    setSaved(false);
+  }
+
   // Detect if there's an existing annotation to show "Update" vs "Save"
   const hasExistingAnnotation = !!(
     reference.annotations &&
     (reference.annotations.tags.length > 0 || reference.annotations.note)
   );
-
-  useEffect(() => {
-    setTags(reference.annotations?.tags || []);
-    setNote(reference.annotations?.note || '');
-    setSaved(false);
-  }, [reference]);
 
   function toggleTag(tagId: string) {
     setTags((prev) =>

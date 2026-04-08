@@ -20,10 +20,6 @@ export default function SessionPage() {
   const [session, setSession] = useState<SessionData | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchSession();
-  }, [sessionId]);
-
   async function fetchSession() {
     const res = await fetch(`/api/sessions/${sessionId}`);
     if (!res.ok) {
@@ -36,6 +32,9 @@ export default function SessionPage() {
 
     routeByStatus(data.status);
   }
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { fetchSession(); }, [sessionId]);
 
   function routeByStatus(status: SessionStatus) {
     const round = getCurrentRound(status);

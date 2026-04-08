@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 
 const COMPILATION_STEPS = [
@@ -20,12 +20,16 @@ export default function CompilingPage() {
   const [step, setStep] = useState(0);
   const [pollError, setPollError] = useState(false);
   const attemptsRef = useRef(0);
+  const [retryCount, setRetryCount] = useState(0);
 
-  const startPolling = useCallback(() => {
+  function handleRetry() {
     attemptsRef.current = 0;
     setPollError(false);
     setStep(0);
+    setRetryCount((c) => c + 1);
+  }
 
+  useEffect(() => {
     fetch('/api/compile', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -62,12 +66,7 @@ export default function CompilingPage() {
       clearInterval(interval);
       clearInterval(stepInterval);
     };
-  }, [sessionId, router]);
-
-  useEffect(() => {
-    const cleanup = startPolling();
-    return cleanup;
-  }, [startPolling]);
+  }, [sessionId, router, retryCount]);
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center px-6">
@@ -131,7 +130,7 @@ export default function CompilingPage() {
               Compilation is taking longer than expected.
             </p>
             <button
-              onClick={() => startPolling()}
+              onClick={handleRetry}
               className="mt-4 rounded-2xl bg-[var(--accent)] px-6 py-2.5 text-sm font-semibold text-[var(--bg)] transition-all hover:bg-[var(--accent-hover)]"
             >
               Retry

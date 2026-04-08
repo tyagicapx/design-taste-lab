@@ -67,6 +67,7 @@ function ComparisonPreview({ side }: { side: ComparisonSide }) {
   if (side.type === 'library' && side.imagePath) {
     return (
       <div className="relative h-full w-full">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={side.imagePath}
           alt={side.label}
@@ -267,6 +268,23 @@ export default function ComparePage() {
     }
   }
 
+  // No pairs to compare — skip ahead (must be before any early returns per rules-of-hooks)
+  useEffect(() => {
+    if (!loading && pairs.length === 0) {
+      // Navigate directly instead of calling handleSubmit to avoid setState in effect
+      const shouldContinue = convergence?.shouldContinue ?? (roundNumber < 3);
+      if (shouldContinue && roundNumber < 3) {
+        router.push(`/session/${sessionId}/round/${roundNumber + 1}/hub`);
+      } else {
+        fetch(`/api/sessions/${sessionId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'compiling' }),
+        }).then(() => router.push(`/session/${sessionId}/compiling`));
+      }
+    }
+  }, [loading, pairs.length, convergence, roundNumber, router, sessionId]);
+
   if (loading) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center">
@@ -276,14 +294,7 @@ export default function ComparePage() {
     );
   }
 
-  // No pairs to compare — skip ahead (in useEffect to avoid render-loop)
-  useEffect(() => {
-    if (!loading && pairs.length === 0) {
-      handleSubmit();
-    }
-  }, [loading, pairs.length]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  if (pairs.length === 0 && !loading) {
+  if (pairs.length === 0) {
     return null;
   }
 

@@ -511,7 +511,7 @@ ALWAYS: Dark base, functional density, clear hierarchy, monospace for data, acce
 
 export const demoText: TextProvider = {
   async generateText(params) {
-    const module = detectModule(params.systemPrompt, params.userPrompt);
+    const detectedModule = detectModule(params.systemPrompt, params.userPrompt);
 
     // Simulate realistic latency per module
     const delays: Record<string, number> = {
@@ -527,10 +527,10 @@ export const demoText: TextProvider = {
       taste_compiler: 2000,
       unknown: 500,
     };
-    await delay(delays[module] || 500);
+    await delay(delays[detectedModule] || 500);
 
     let text: string;
-    switch (module) {
+    switch (detectedModule) {
       case 'reference_parser':
         text = MOCK_REFERENCE_ANALYSIS;
         break;
