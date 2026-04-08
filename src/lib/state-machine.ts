@@ -17,6 +17,7 @@ const VALID_TRANSITIONS: Record<SessionStatus, SessionStatus[]> = {
   round_3_compare: ['compiling'],
   compiling: ['complete'],
   complete: [],
+  error: ['uploading', 'analyzing'],
 };
 
 const STATUS_LABELS: Record<SessionStatus, string> = {
@@ -36,6 +37,7 @@ const STATUS_LABELS: Record<SessionStatus, string> = {
   round_3_compare: 'Round 3 — Compare',
   compiling: 'Compiling Taste Spec...',
   complete: 'Complete',
+  error: 'Error — Please Retry',
 };
 
 export function canTransition(
@@ -69,6 +71,7 @@ export function isComplete(status: SessionStatus): boolean {
 }
 
 export function getProgress(status: SessionStatus): number {
+  if (status === 'error') return 0;
   const order: SessionStatus[] = [
     'uploading',
     'onboarding',

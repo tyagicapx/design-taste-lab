@@ -11,15 +11,11 @@ import {
 } from '../db/queries';
 import { ReferenceAnalysis } from '../types';
 import path from 'path';
+import { parseJsonResponse } from '../utils/json';
+import { DEFAULT_CLAUDE_MODEL } from '../constants';
 
 const CONCURRENCY = 3;
 
-function parseJsonResponse(text: string): unknown {
-  // Try to extract JSON from the response
-  const jsonMatch = text.match(/\{[\s\S]*\}/);
-  if (!jsonMatch) throw new Error('No JSON found in response');
-  return JSON.parse(jsonMatch[0]);
-}
 
 async function parseOneReference(
   sessionId: string,
@@ -39,7 +35,7 @@ async function parseOneReference(
     sessionId,
     'reference_parser',
     'claude',
-    process.env.CLAUDE_MODEL || 'claude-sonnet-4-20250514',
+    DEFAULT_CLAUDE_MODEL,
     () =>
       visionProvider.analyzeImage({
         systemPrompt,

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { writeFile } from 'fs/promises';
 import path from 'path';
 import { nanoid } from 'nanoid';
-import { createReference } from '@/lib/db/queries';
+import { createReference, getSessionReferences } from '@/lib/db/queries';
 import { ensureUploadDir } from '@/lib/utils/image';
 import {
   validateSessionId,
@@ -39,7 +39,9 @@ export async function POST(req: NextRequest) {
   }
 
   // HIGH-2: Server-side file validation (type, size, count)
-  const { valid, errors } = validateUploadedFiles(files);
+  // P1-5: Pass existing reference count so total limit is enforced
+  const existingRefs = getSessionReferences(sessionId);
+  const { valid, errors } = validateUploadedFiles(files, existingRefs.length);
 
   if (valid.length === 0) {
     return NextResponse.json(

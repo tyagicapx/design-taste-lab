@@ -10,12 +10,9 @@ import {
   updateSessionCritic,
 } from '../db/queries';
 import { CriticOutput } from '../types';
+import { parseJsonResponse } from '../utils/json';
+import { DEFAULT_CLAUDE_MODEL } from '../constants';
 
-function parseJsonResponse(text: string): unknown {
-  const jsonMatch = text.match(/\{[\s\S]*\}/);
-  if (!jsonMatch) throw new Error('No JSON found in response');
-  return JSON.parse(jsonMatch[0]);
-}
 
 export async function runCritic(sessionId: string): Promise<CriticOutput> {
   const session = getSession(sessionId);
@@ -36,7 +33,7 @@ export async function runCritic(sessionId: string): Promise<CriticOutput> {
     sessionId,
     'internal_critic',
     'claude',
-    process.env.CLAUDE_MODEL || 'claude-sonnet-4-20250514',
+    DEFAULT_CLAUDE_MODEL,
     () =>
       textProvider.generateText({
         systemPrompt,

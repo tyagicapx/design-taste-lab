@@ -57,9 +57,8 @@ export default function SessionPage() {
       case 'round_1_questionnaire':
       case 'round_2_questionnaire':
       case 'round_3_questionnaire':
-        router.push(
-          `/session/${sessionId}/round/${round}/questionnaire`
-        );
+        // V2: Route to the round hub which orchestrates the dynamic method sequence
+        router.push(`/session/${sessionId}/round/${round}/hub`);
         break;
       case 'round_1_probes':
       case 'round_2_probes':

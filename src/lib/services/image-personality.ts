@@ -12,6 +12,7 @@
 
 import fs from 'fs';
 import path from 'path';
+import { validateSessionId } from '@/lib/security';
 
 const OPENAI_BASE = 'https://api.openai.com/v1';
 
@@ -22,8 +23,6 @@ function getApiKey(): string {
 }
 
 export interface ImageEditRequest {
-  /** URL of the source image (from Unsplash) */
-  sourceImageUrl: string;
   /** Design mood/direction for the edit */
   editPrompt: string;
   /** Output size */
@@ -37,16 +36,6 @@ export interface EditedImage {
   filePath: string;
   /** Public URL path */
   publicPath: string;
-}
-
-/**
- * Download an image URL to a buffer.
- */
-async function downloadToBuffer(url: string): Promise<Buffer> {
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`Failed to download image: ${res.status}`);
-  const arrayBuffer = await res.arrayBuffer();
-  return Buffer.from(arrayBuffer);
 }
 
 /**
@@ -99,15 +88,15 @@ export async function editImageWithPersonality(
  * @returns Local file path and public URL path for the edited image.
  */
 export async function processProbeImage(
-  sourceImageUrl: string,
   editPrompt: string,
   sessionId: string,
   probeIndex: number,
   imageIndex: number
 ): Promise<EditedImage> {
+  if (!validateSessionId(sessionId)) throw new Error('Invalid session ID');
+
   // Generate the edited image
   const result = await editImageWithPersonality({
-    sourceImageUrl,
     editPrompt,
     size: '1536x1024',
   });

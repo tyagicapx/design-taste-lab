@@ -10,12 +10,9 @@ import {
   updateSessionConvergence,
 } from '../db/queries';
 import type { ConvergenceDecision } from '../types';
+import { parseJsonResponse } from '../utils/json';
+import { MAX_ROUNDS, DEFAULT_CLAUDE_MODEL } from '../constants';
 
-function parseJsonResponse(text: string): unknown {
-  const jsonMatch = text.match(/\{[\s\S]*\}/);
-  if (!jsonMatch) throw new Error('No JSON found in response');
-  return JSON.parse(jsonMatch[0]);
-}
 
 /**
  * Evaluates whether calibration should continue after a round.
@@ -30,8 +27,8 @@ export async function evaluateConvergence(
   const session = getSession(sessionId);
   if (!session) throw new Error('Session not found');
 
-  // Round 3 is always the last — force stop
-  if (roundNumber >= 3) {
+  // Max rounds reached — force stop
+  if (roundNumber >= MAX_ROUNDS) {
     const decision: ConvergenceDecision = {
       shouldContinue: false,
       reason: 'Maximum rounds (3) reached.',
@@ -69,7 +66,7 @@ export async function evaluateConvergence(
     sessionId,
     'convergence_engine',
     'claude',
-    process.env.CLAUDE_MODEL || 'claude-sonnet-4-20250514',
+    DEFAULT_CLAUDE_MODEL,
     () =>
       textProvider.generateText({
         systemPrompt,
@@ -79,11 +76,6 @@ export async function evaluateConvergence(
   );
 
   const parsed = parseJsonResponse(result.text) as ConvergenceDecision;
-
-  // Ensure min 1 round always happens (never skip Round 1)
-  if (roundNumber < 1) {
-    parsed.shouldContinue = true;
-  }
 
   updateSessionConvergence(sessionId, parsed);
   return parsed;

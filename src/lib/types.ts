@@ -19,6 +19,7 @@ export const SESSION_STATUSES = [
   'round_3_compare',
   'compiling',
   'complete',
+  'error',
 ] as const;
 
 export type SessionStatus = (typeof SESSION_STATUSES)[number];

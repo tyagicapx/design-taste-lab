@@ -1,4 +1,4 @@
-import type { SurfaceType } from '../types';
+import type { SurfaceType, ClusteringResult } from '../types';
 import { textProvider } from '../ai/registry';
 import { trackApiCall } from '../ai/token-tracker';
 import {
@@ -11,13 +11,9 @@ import {
   updateSessionClusters,
   updateReferenceClassification,
 } from '../db/queries';
-import type { ClusteringResult } from '../types';
+import { parseJsonResponse } from '../utils/json';
+import { DEFAULT_CLAUDE_MODEL } from '../constants';
 
-function parseJsonResponse(text: string): unknown {
-  const jsonMatch = text.match(/\{[\s\S]*\}/);
-  if (!jsonMatch) throw new Error('No JSON found in response');
-  return JSON.parse(jsonMatch[0]);
-}
 
 /**
  * Clusters all references into aesthetic families, identifies anchors/outliers,
@@ -66,7 +62,7 @@ export async function clusterReferences(sessionId: string): Promise<ClusteringRe
     sessionId,
     'reference_clusterer',
     'claude',
-    process.env.CLAUDE_MODEL || 'claude-sonnet-4-20250514',
+    DEFAULT_CLAUDE_MODEL,
     () =>
       textProvider.generateText({
         systemPrompt,

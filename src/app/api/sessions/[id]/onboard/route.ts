@@ -1,12 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSession, updateSessionOnboarding, updateSessionStatus } from '@/lib/db/queries';
+import { validateSessionId } from '@/lib/security';
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id: sessionId } = await params;
-  const body = await request.json();
+
+  if (!validateSessionId(sessionId)) {
+    return NextResponse.json({ error: 'Invalid session ID' }, { status: 400 });
+  }
+
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+  }
 
   const session = getSession(sessionId);
   if (!session) {

@@ -147,7 +147,6 @@ export async function generateProbeVisuals(
 
       // 4. Apply personality edit via GPT Image 1.5
       const edited = await processProbeImage(
-        photo.url,
         editPrompt,
         request.sessionId,
         request.probeIndex,
@@ -211,6 +210,10 @@ export async function generateAllProbeVisuals(
   return results;
 }
 
+function escapeHtml(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
 /**
  * Generate an HTML image tag with proper styling for embedding in probe HTML.
  *
@@ -221,6 +224,9 @@ export function visualToHtml(visual: ProbeVisual, role: 'hero-bg' | 'inline'): s
     return `background-image: url('${visual.publicPath}'); background-size: cover; background-position: center;`;
   }
 
-  return `<img src="${visual.publicPath}" alt="${visual.alt}" style="width: 100%; height: auto; object-fit: cover; border-radius: 16px;" />
-<!-- ${visual.credit} -->`;
+  const safeAlt = escapeHtml(visual.alt);
+  const safeCredit = escapeHtml(visual.credit);
+
+  return `<img src="${visual.publicPath}" alt="${safeAlt}" style="width: 100%; height: auto; object-fit: cover; border-radius: 16px;" />
+<!-- ${safeCredit} -->`;
 }

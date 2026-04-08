@@ -11,12 +11,9 @@ import {
   getSessionReferences,
 } from '../db/queries';
 import { TasteMap } from '../types';
+import { parseJsonResponse } from '../utils/json';
+import { DEFAULT_CLAUDE_MODEL } from '../constants';
 
-function parseJsonResponse(text: string): unknown {
-  const jsonMatch = text.match(/\{[\s\S]*\}/);
-  if (!jsonMatch) throw new Error('No JSON found in response');
-  return JSON.parse(jsonMatch[0]);
-}
 
 export async function decomposeTaste(sessionId: string): Promise<TasteMap> {
   const refs = getSessionReferences(sessionId);
@@ -38,7 +35,7 @@ export async function decomposeTaste(sessionId: string): Promise<TasteMap> {
     sessionId,
     'taste_decomposition',
     'claude',
-    process.env.CLAUDE_MODEL || 'claude-sonnet-4-20250514',
+    DEFAULT_CLAUDE_MODEL,
     () =>
       textProvider.generateText({
         systemPrompt,

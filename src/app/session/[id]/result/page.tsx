@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -27,6 +27,9 @@ export default function ResultPage() {
   const [markdown, setMarkdown] = useState<string | null>(null);
   const [copied, setCopied] = useState<string | null>(null); // tracks which section was copied
   const [recompiling, setRecompiling] = useState(false);
+  const [recompileError, setRecompileError] = useState(false);
+  const recompileIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const recompileAttemptsRef = useRef(0);
 
   useEffect(() => {
     fetch(`/api/sessions/${sessionId}`)
@@ -72,9 +75,18 @@ export default function ResultPage() {
     }
   }
 
+  const MAX_POLL_ATTEMPTS = 90; // 3 minutes at 2s intervals
+
   async function handleRecompile() {
     setRecompiling(true);
+    setRecompileError(false);
     setMarkdown(null);
+    recompileAttemptsRef.current = 0;
+
+    // Clear any existing poll interval
+    if (recompileIntervalRef.current) {
+      clearInterval(recompileIntervalRef.current);
+    }
 
     await fetch('/api/compile', {
       method: 'POST',
@@ -83,17 +95,41 @@ export default function ResultPage() {
     });
 
     // Poll for completion
-    const interval = setInterval(async () => {
-      const res = await fetch(`/api/sessions/${sessionId}`);
-      const data = await res.json();
-      if (data.finalMarkdown && data.finalMarkdown !== markdown) {
-        setMarkdown(data.finalMarkdown);
-        setSession(data);
+    recompileIntervalRef.current = setInterval(async () => {
+      recompileAttemptsRef.current += 1;
+      if (recompileAttemptsRef.current >= MAX_POLL_ATTEMPTS) {
+        if (recompileIntervalRef.current) clearInterval(recompileIntervalRef.current);
+        recompileIntervalRef.current = null;
         setRecompiling(false);
-        clearInterval(interval);
+        setRecompileError(true);
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/sessions/${sessionId}`);
+        const data = await res.json();
+        if (data.finalMarkdown && data.finalMarkdown !== markdown) {
+          setMarkdown(data.finalMarkdown);
+          setSession(data);
+          setRecompiling(false);
+          setRecompileError(false);
+          if (recompileIntervalRef.current) clearInterval(recompileIntervalRef.current);
+          recompileIntervalRef.current = null;
+        }
+      } catch {
+        // Network error — let it retry on next interval
       }
     }, 2000);
   }
+
+  // Cleanup recompile interval on unmount
+  useEffect(() => {
+    return () => {
+      if (recompileIntervalRef.current) {
+        clearInterval(recompileIntervalRef.current);
+      }
+    };
+  }, []);
 
   const confidence = session?.convergenceDecision?.overallConfidence;
   const lockedCount = session?.convergenceDecision?.lockedAxes?.length || 0;
@@ -207,6 +243,18 @@ export default function ResultPage() {
             <div className="prose prose-invert max-w-none prose-headings:font-bold prose-headings:tracking-tight prose-headings:text-[var(--text-primary)] prose-h1:text-3xl prose-h1:mb-6 prose-h1:mt-10 first:prose-h1:mt-0 prose-h2:text-2xl prose-h2:mb-4 prose-h2:mt-8 prose-h3:text-xl prose-h3:mt-6 prose-p:text-[var(--text-secondary)] prose-p:leading-relaxed prose-strong:text-[var(--text-primary)] prose-li:text-[var(--text-secondary)] prose-code:rounded-lg prose-code:bg-[var(--surface-2)] prose-code:px-2 prose-code:py-1 prose-code:text-[var(--accent)] prose-code:text-sm prose-pre:rounded-xl prose-pre:bg-[var(--surface-2)] prose-pre:shadow-[var(--shadow-sm)] prose-hr:border-[var(--surface-3)]">
               <ReactMarkdown remarkPlugins={[remarkGfm]}>{markdown}</ReactMarkdown>
             </div>
+          </div>
+        ) : recompileError ? (
+          <div className="flex flex-col items-center justify-center py-24">
+            <p className="text-[var(--text-secondary)]">
+              Re-compilation is taking longer than expected.
+            </p>
+            <button
+              onClick={handleRecompile}
+              className="mt-4 rounded-2xl bg-[var(--accent)] px-6 py-2.5 text-sm font-semibold text-[var(--bg)] transition-all hover:bg-[var(--accent-hover)]"
+            >
+              Retry
+            </button>
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-24">

@@ -11,6 +11,7 @@ import fs from 'fs';
 import path from 'path';
 import https from 'https';
 import http from 'http';
+import { validateSessionId } from '@/lib/security';
 
 const APIFY_BASE = 'https://api.apify.com/v2';
 const PINTEREST_ACTOR = 'fatihtahta~pinterest-scraper-search';
@@ -141,7 +142,7 @@ function extractPinData(item: Record<string, unknown>): PinterestPin | null {
 /**
  * Download an image URL to a local file.
  */
-function downloadImage(imageUrl: string, destPath: string): Promise<void> {
+function downloadImage(imageUrl: string, destPath: string, maxRedirects = 5): Promise<void> {
   return new Promise((resolve, reject) => {
     const protocol = imageUrl.startsWith('https') ? https : http;
     const file = fs.createWriteStream(destPath);
@@ -150,9 +151,14 @@ function downloadImage(imageUrl: string, destPath: string): Promise<void> {
         if (response.statusCode === 301 || response.statusCode === 302) {
           const loc = response.headers.location;
           if (loc) {
+            response.destroy();
             file.close();
             try { fs.unlinkSync(destPath); } catch {}
-            return downloadImage(loc, destPath).then(resolve).catch(reject);
+            if (maxRedirects <= 0) {
+              reject(new Error('Too many redirects'));
+              return;
+            }
+            return downloadImage(loc, destPath, maxRedirects - 1).then(resolve).catch(reject);
           }
         }
         response.pipe(file);
@@ -170,6 +176,8 @@ export async function extractPinterestBoard(
   sessionId: string,
   maxPins = 30
 ): Promise<{ filename: string; filePath: string; pin: PinterestPin }[]> {
+  if (!validateSessionId(sessionId)) throw new Error('Invalid session ID');
+
   const { runId, datasetId } = await startRun(boardUrl, maxPins);
   await waitForRun(runId);
   const items = await getDatasetItems(datasetId);

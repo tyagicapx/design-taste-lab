@@ -35,7 +35,7 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 
 # Install ALL deps (including devDeps for build) and rebuild native modules
-RUN npm ci && npm rebuild better-sqlite3
+RUN npm ci --ignore-scripts && npm rebuild puppeteer esbuild better-sqlite3 unrs-resolver
 
 # Copy rest of the app
 COPY . .

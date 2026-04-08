@@ -39,28 +39,14 @@ export function ensureUploadDir(sessionId: string): string {
 }
 
 export function ensureProbeDir(sessionId: string): string {
-  const dir = path.join(
-    process.cwd(),
-    'public',
-    'uploads',
-    sessionId,
-    'probes'
-  );
+  const baseDir = path.join(process.cwd(), 'public', 'uploads');
+  const dir = path.resolve(baseDir, sessionId, 'probes');
+  if (!dir.startsWith(baseDir)) {
+    throw new Error('Invalid session ID — path traversal detected');
+  }
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
   }
   return dir;
 }
 
-const ALLOWED_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'];
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-
-export function validateImageFile(file: File): string | null {
-  if (!ALLOWED_TYPES.includes(file.type)) {
-    return `Invalid file type: ${file.type}. Allowed: PNG, JPG, WebP, GIF.`;
-  }
-  if (file.size > MAX_FILE_SIZE) {
-    return `File too large: ${(file.size / 1024 / 1024).toFixed(1)}MB. Max: 10MB.`;
-  }
-  return null;
-}

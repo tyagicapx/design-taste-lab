@@ -13,7 +13,13 @@ import {
 import { validateSessionId } from '@/lib/security';
 
 export async function POST(req: NextRequest) {
-  const { sessionId } = await req.json();
+  let body;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+  }
+  const { sessionId } = body;
 
   // CRIT-3: Validate sessionId
   if (!sessionId || !validateSessionId(sessionId)) {
@@ -40,6 +46,7 @@ export async function POST(req: NextRequest) {
       updateSessionStatus(sessionId, 'reviewing');
     } catch (error) {
       console.error('Analysis pipeline failed:', error);
+      updateSessionStatus(sessionId, 'error');
     } finally {
       // CRIT-4: Always release lock, even on error
       releaseProcessingLock(sessionId);

@@ -1,15 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createReference } from '@/lib/db/queries';
 import { extractPinterestBoard } from '@/lib/services/pinterest';
+import { validateSessionId } from '@/lib/security';
 
 export async function POST(request: NextRequest) {
-  const { sessionId, boardUrl } = await request.json();
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+  }
+  const { sessionId, boardUrl } = body;
 
   if (!sessionId || !boardUrl) {
     return NextResponse.json(
       { error: 'sessionId and boardUrl are required' },
       { status: 400 }
     );
+  }
+
+  if (!validateSessionId(sessionId)) {
+    return NextResponse.json({ error: 'Invalid session ID' }, { status: 400 });
   }
 
   // Validate it looks like a Pinterest URL

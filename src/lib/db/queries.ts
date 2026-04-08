@@ -77,15 +77,23 @@ export function releaseProcessingLock(id: string): void {
 export function updateSessionStatus(id: string, newStatus: SessionStatus) {
   const session = getSession(id);
   if (!session) throw new Error(`Session ${id} not found`);
+
   if (!canTransition(session.status as SessionStatus, newStatus)) {
+    // Allow same-status (idempotent)
+    if (session.status === newStatus) return;
     throw new Error(
       `Invalid transition: ${session.status} → ${newStatus}`
     );
   }
-  db.update(sessions)
+
+  const result = db.update(sessions)
     .set({ status: newStatus, updatedAt: new Date() })
-    .where(eq(sessions.id, id))
+    .where(and(eq(sessions.id, id), eq(sessions.status, session.status)))
     .run();
+
+  if (result.changes === 0) {
+    throw new Error('Status was changed by another request');
+  }
 }
 
 export function updateSessionTasteMap(id: string, tasteMap: TasteMap) {

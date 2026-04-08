@@ -4,6 +4,7 @@ import {
   buildSystemPrompt,
   buildUserPrompt,
 } from '../prompts/taste-compiler';
+import { MAX_ROUNDS, DEFAULT_CLAUDE_MODEL } from '../constants';
 import {
   getSession,
   getSessionReferences,
@@ -26,7 +27,7 @@ export async function compileTasteSpec(sessionId: string): Promise<string> {
   const allProbeFeedback: unknown[] = [];
   const allComparisonResults: unknown[] = [];
 
-  for (let r = 1; r <= 3; r++) {
+  for (let r = 1; r <= MAX_ROUNDS; r++) {
     const round = getRound(sessionId, r);
     if (round) {
       if (round.answers) allAnswers.push(round.answers);
@@ -79,7 +80,7 @@ export async function compileTasteSpec(sessionId: string): Promise<string> {
     sessionId,
     'taste_compiler',
     'claude',
-    process.env.CLAUDE_MODEL || 'claude-sonnet-4-20250514',
+    DEFAULT_CLAUDE_MODEL,
     () =>
       textProvider.generateText({
         systemPrompt,

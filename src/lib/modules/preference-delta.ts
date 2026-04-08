@@ -13,12 +13,9 @@ import {
   updateSessionTasteMap,
 } from '../db/queries';
 import { PreferenceDeltaResult, TasteMap } from '../types';
+import { parseJsonResponse } from '../utils/json';
+import { DEFAULT_CLAUDE_MODEL } from '../constants';
 
-function parseJsonResponse(text: string): unknown {
-  const jsonMatch = text.match(/\{[\s\S]*\}/);
-  if (!jsonMatch) throw new Error('No JSON found in response');
-  return JSON.parse(jsonMatch[0]);
-}
 
 export async function computePreferenceDeltas(
   sessionId: string,
@@ -59,7 +56,7 @@ export async function computePreferenceDeltas(
     sessionId,
     'preference_delta',
     'claude',
-    process.env.CLAUDE_MODEL || 'claude-sonnet-4-20250514',
+    DEFAULT_CLAUDE_MODEL,
     () =>
       textProvider.generateText({
         systemPrompt,
@@ -74,8 +71,9 @@ export async function computePreferenceDeltas(
   updateRoundDeltas(round.id, deltaResult);
 
   // Apply taste map updates
-  if (deltaResult.tasteMapUpdates && session.tasteMap) {
-    const updatedMap = { ...(session.tasteMap as TasteMap) };
+  if (deltaResult.tasteMapUpdates) {
+    const currentMap = (session.tasteMap as TasteMap) || {};
+    const updatedMap = { ...currentMap };
     for (const update of deltaResult.tasteMapUpdates) {
       if (updatedMap[update.axisId]) {
         updatedMap[update.axisId] = {

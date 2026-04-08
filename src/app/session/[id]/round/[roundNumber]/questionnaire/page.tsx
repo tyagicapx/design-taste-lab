@@ -230,6 +230,7 @@ export default function QuestionnairePage() {
             <button
               key={q.id}
               onClick={() => setCurrentIdx(i)}
+              aria-label={`Go to question ${i + 1}`}
               className={`h-2 rounded-full transition-all duration-300 ${
                 i === currentIdx
                   ? 'w-8 bg-[var(--accent)]'

@@ -19,8 +19,15 @@ jobs:
           node-version: 20
           cache: 'npm'
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Install dependencies (scripts blocked)
+        run: npm ci --ignore-scripts
+
+      - name: Rebuild allowed native modules
+        run: npm rebuild puppeteer esbuild better-sqlite3 unrs-resolver
+
+      - name: Security audit
+        run: npm audit --audit-level=high
+        continue-on-error: true
 
       - name: Lint
         run: npm run lint

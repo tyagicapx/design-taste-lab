@@ -45,7 +45,7 @@ function ProbeIframe({ html, label }: { html: string; label: string }) {
   return (
     <iframe
       ref={iframeRef}
-      sandbox="allow-same-origin"
+      sandbox=""
       className="h-full w-full"
       title={label}
       style={{ transform: 'scale(0.5)', transformOrigin: 'top left', width: '200%', height: '200%' }}

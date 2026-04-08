@@ -11,12 +11,9 @@ import {
   updateRoundQuestionnaire,
 } from '../db/queries';
 import { Question } from '../types';
+import { parseJsonResponse } from '../utils/json';
+import { DEFAULT_CLAUDE_MODEL } from '../constants';
 
-function parseJsonResponse(text: string): unknown {
-  const jsonMatch = text.match(/\{[\s\S]*\}/);
-  if (!jsonMatch) throw new Error('No JSON found in response');
-  return JSON.parse(jsonMatch[0]);
-}
 
 export async function generateQuestionnaire(
   sessionId: string,
@@ -52,7 +49,7 @@ export async function generateQuestionnaire(
     sessionId,
     'questionnaire_engine',
     'claude',
-    process.env.CLAUDE_MODEL || 'claude-sonnet-4-20250514',
+    DEFAULT_CLAUDE_MODEL,
     () =>
       textProvider.generateText({
         systemPrompt,
@@ -69,7 +66,7 @@ export async function generateQuestionnaire(
   // Create or update the round record
   let round = getRound(sessionId, roundNumber);
   if (!round) {
-    const roundId = createRound(sessionId, roundNumber);
+    createRound(sessionId, roundNumber);
     round = getRound(sessionId, roundNumber);
   }
 

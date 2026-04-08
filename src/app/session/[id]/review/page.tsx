@@ -103,23 +103,23 @@ export default function ReviewPage() {
   async function handleContinue() {
     setContinuing(true);
 
-    // Apply outlier decisions via API
+    // Batch all outlier decisions into a single API call
+    const updates: { refId: string; weight: number; role: string }[] = [];
     for (const [refId, decision] of Object.entries(outlierDecisions)) {
       if (decision === 'exclude') {
-        // Set weight to 0
-        await fetch(`/api/references/${refId}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ weight: 0, role: 'outlier' }),
-        });
+        updates.push({ refId, weight: 0, role: 'outlier' });
       } else if (decision === 'keep') {
-        await fetch(`/api/references/${refId}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ weight: 1.0, role: 'unclassified' }),
-        });
+        updates.push({ refId, weight: 1.0, role: 'unclassified' });
       }
       // 'deweight' is the default — already set by clusterer
+    }
+
+    if (updates.length > 0) {
+      await fetch('/api/references/batch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId, updates }),
+      });
     }
 
     // Transition to round 1 questionnaire
@@ -129,7 +129,7 @@ export default function ReviewPage() {
       body: JSON.stringify({ status: 'round_1_questionnaire' }),
     });
 
-    router.push(`/session/${sessionId}/round/1/questionnaire`);
+    router.push(`/session/${sessionId}/round/1/hub`);
   }
 
   if (loading) {

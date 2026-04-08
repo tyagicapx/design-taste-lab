@@ -15,12 +15,9 @@ import {
 import { generateProbeVisuals, type ProbeVisual } from '../services/probe-visuals';
 import { selectRelevantSites, selectContrastingSites } from '../services/website-library';
 import { captureViewportScreenshot } from '../services/screenshot';
+import { parseJsonResponse } from '../utils/json';
+import { DEFAULT_CLAUDE_MODEL } from '../constants';
 
-function parseJsonResponse(text: string): unknown {
-  const jsonMatch = text.match(/\{[\s\S]*\}/);
-  if (!jsonMatch) throw new Error('No JSON found in response');
-  return JSON.parse(jsonMatch[0]);
-}
 
 /**
  * Inject generated visuals into probe HTML.
@@ -116,7 +113,7 @@ export async function generateProbes(
     sessionId,
     'probe_generator',
     'claude',
-    process.env.CLAUDE_MODEL || 'claude-sonnet-4-20250514',
+    DEFAULT_CLAUDE_MODEL,
     () =>
       textProvider.generateText({
         systemPrompt: buildHtmlProbeSystemPrompt(),
@@ -189,6 +186,8 @@ export async function generateProbes(
   const shouldUseVisuals = hasImageKeys && detectImageryTasteSignal(session);
 
   if (shouldUseVisuals) {
+    // Intentional fire-and-forget: visual asset generation is a non-blocking
+    // enhancement. Probes are usable without visuals, so we don't await this.
     (async () => {
       try {
         for (let i = 0; i < parsed.probes.length; i++) {
@@ -230,6 +229,8 @@ export async function generateProbes(
   // DISABLED in demo mode (no Puppeteer available on demo deploy)
   // ────────────────────────────────────────────────────────────────────
 
+  // Intentional fire-and-forget: real-site screenshot probes are a non-blocking
+  // enhancement. The core AI-generated probes are already saved above.
   (async () => {
     try {
       const tasteMap = session.tasteMap as Record<
@@ -267,7 +268,7 @@ export async function generateProbes(
             sessionId,
             label: site.name,
             description: site.description,
-            type: 'screenshot' as 'html_css', // stored as screenshot but type column is string
+            type: 'screenshot',
             content: screenshot.filePath,      // path to screenshot image
             probeType: site.surface === 'app' ? 'dashboard' : 'landing_hero',
             surfaceContext: site.surface === 'app' ? 'app' : 'web',

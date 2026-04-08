@@ -4,6 +4,7 @@ import { computePreferenceDeltas } from '@/lib/modules/preference-delta';
 import { evaluateConvergence } from '@/lib/modules/convergence-engine';
 import { generateQuestionnaire } from '@/lib/modules/questionnaire-engine';
 import { SessionStatus } from '@/lib/types';
+import { validateSessionId } from '@/lib/security';
 
 export async function POST(
   req: NextRequest,
@@ -11,7 +12,17 @@ export async function POST(
 ) {
   const { roundNumber: roundStr } = await params;
   const roundNumber = parseInt(roundStr, 10);
-  const { sessionId, responses } = await req.json();
+  let body;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+  }
+  const { sessionId, responses } = body;
+
+  if (!sessionId || !validateSessionId(sessionId)) {
+    return NextResponse.json({ error: 'Invalid session ID' }, { status: 400 });
+  }
 
   // Save all probe responses
   for (const resp of responses) {

@@ -1,0 +1,119 @@
+name: "📸 Screenshot Library Submission"
+description: Submit a website to the screenshot library
+labels: ["library-submission"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for contributing to the screenshot library! We need 3 things:
+        1. The website URL
+        2. A screenshot (recommended) OR we'll auto-capture it
+        3. Category and style tags
+
+  - type: input
+    id: url
+    attributes:
+      label: Website URL
+      description: The full URL of the website
+      placeholder: "https://linear.app"
+    validations:
+      required: true
+
+  - type: input
+    id: name
+    attributes:
+      label: Website / Brand Name
+      placeholder: "Linear"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      options:
+        - landing_saas
+        - landing_creative
+        - landing_ecommerce
+        - dashboard_analytics
+        - dashboard_admin
+        - mobile_ios
+        - mobile_android
+        - product_onboarding
+        - product_pricing
+        - portfolio
+        - dark_mode
+        - trending_2026
+        - legacy_brand
+    validations:
+      required: true
+
+  - type: dropdown
+    id: theme
+    attributes:
+      label: Theme
+      options:
+        - dark
+        - light
+        - mixed
+    validations:
+      required: true
+
+  - type: dropdown
+    id: density
+    attributes:
+      label: Density
+      options:
+        - breathable
+        - balanced
+        - dense
+    validations:
+      required: true
+
+  - type: dropdown
+    id: typography
+    attributes:
+      label: Typography Style
+      options:
+        - dramatic
+        - balanced
+        - restrained
+    validations:
+      required: true
+
+  - type: dropdown
+    id: color_temp
+    attributes:
+      label: Color Temperature
+      options:
+        - cool
+        - neutral
+        - warm
+    validations:
+      required: true
+
+  - type: dropdown
+    id: surface_style
+    attributes:
+      label: Surface Style
+      options:
+        - flat_modern
+        - subtle_depth
+        - glassmorphism
+        - tactile
+        - brutalist
+    validations:
+      required: true
+
+  - type: textarea
+    id: screenshot
+    attributes:
+      label: Screenshot (optional)
+      description: "Drag & drop a screenshot here. If not provided, we'll auto-capture via Puppeteer."
+      placeholder: "Drag and drop your screenshot image here"
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes (optional)
+      description: "Anything special about this design? Why is it worth including?"

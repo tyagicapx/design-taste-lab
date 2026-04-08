@@ -114,8 +114,9 @@ export async function stripExif(buffer: Buffer): Promise<Buffer> {
   try {
     const sharp = (await import('sharp')).default;
     return await sharp(buffer).rotate().toBuffer();
-  } catch {
-    // If sharp fails (e.g. unsupported format), return original buffer
+  } catch (err) {
+    // If sharp fails (e.g. unsupported format), return original buffer but warn
+    console.warn(`stripExif: failed to process image — ${err instanceof Error ? err.message : String(err)}`);
     return buffer;
   }
 }

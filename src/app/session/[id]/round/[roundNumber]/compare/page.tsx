@@ -11,10 +11,28 @@ interface Probe {
   surfaceContext: string;
 }
 
+interface LibraryItem {
+  id: string;
+  name: string;
+  image_path: string;
+  category: string;
+  url: string;
+}
+
+/** A side in a comparison can be either an AI probe (HTML) or a library screenshot (image) */
+interface ComparisonSide {
+  id: string;
+  label: string;
+  description: string;
+  content: string;       // HTML for probes, empty for library
+  type: 'probe' | 'library';
+  imagePath?: string;    // Set for library screenshots
+}
+
 interface ComparisonPair {
-  left: Probe;
-  right: Probe;
-  context: string; // "Landing page" or "Dashboard"
+  left: ComparisonSide;
+  right: ComparisonSide;
+  context: string; // "Landing page" or "Dashboard" or "Real vs AI"
 }
 
 type Choice = 'left' | 'right' | 'cant_choose';
@@ -37,12 +55,30 @@ function ProbeIframe({ html, label }: { html: string; label: string }) {
   return (
     <iframe
       ref={iframeRef}
-      sandbox="allow-same-origin"
+      sandbox=""
       className="h-full w-full"
       title={label}
       style={{ transform: 'scale(0.4)', transformOrigin: 'top left', width: '250%', height: '250%' }}
     />
   );
+}
+
+function ComparisonPreview({ side }: { side: ComparisonSide }) {
+  if (side.type === 'library' && side.imagePath) {
+    return (
+      <div className="relative h-full w-full">
+        <img
+          src={side.imagePath}
+          alt={side.label}
+          className="h-full w-full object-cover object-top"
+        />
+        <div className="absolute top-3 right-3 rounded-lg bg-black/50 px-2 py-1 text-[10px] font-medium text-white/70 backdrop-blur-sm">
+          Real site
+        </div>
+      </div>
+    );
+  }
+  return <ProbeIframe html={side.content} label={side.label} />;
 }
 
 export default function ComparePage() {
@@ -73,50 +109,92 @@ export default function ComparePage() {
         }
       });
 
-    // Fetch probes for this round and create comparison pairs
-    fetch(`/api/rounds/${roundNumber}/probes/generate`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sessionId }),
-    })
-      .then((r) => r.json())
-      .then((data) => {
-        const probes: Probe[] = data.probes || [];
-        // Create pairs: compare adjacent probes, and cross-surface pairs
-        const generatedPairs: ComparisonPair[] = [];
+    // Fetch probes AND library screenshots in parallel, then create mixed pairs
+    Promise.all([
+      fetch(`/api/rounds/${roundNumber}/probes/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId }),
+      }).then((r) => r.json()),
+      fetch('/api/library', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'match_taste', sessionId, limit: 6 }),
+      }).then((r) => r.json()).catch(() => ({ screenshots: [] })),
+    ]).then(([probeData, libraryData]) => {
+      const probes: Probe[] = probeData.probes || [];
+      const libraryScreenshots: LibraryItem[] = libraryData.screenshots || [];
 
-        // Group by surface
-        const webProbes = probes.filter((p) => p.surfaceContext !== 'app');
-        const appProbes = probes.filter((p) => p.surfaceContext === 'app');
-
-        // Within-surface comparisons
-        for (let i = 0; i < webProbes.length - 1; i += 2) {
-          generatedPairs.push({
-            left: webProbes[i],
-            right: webProbes[i + 1],
-            context: 'Landing Page',
-          });
-        }
-        for (let i = 0; i < appProbes.length - 1; i += 2) {
-          generatedPairs.push({
-            left: appProbes[i],
-            right: appProbes[i + 1],
-            context: 'Dashboard / App',
-          });
-        }
-
-        // Cross-surface comparison (if both exist)
-        if (webProbes.length > 0 && appProbes.length > 0) {
-          generatedPairs.push({
-            left: webProbes[0],
-            right: appProbes[0],
-            context: 'Cross-surface',
-          });
-        }
-
-        setPairs(generatedPairs);
-        setLoading(false);
+      // Convert probes to ComparisonSide
+      const toSide = (p: Probe): ComparisonSide => ({
+        id: p.id, label: p.label, description: p.description,
+        content: p.content, type: 'probe',
       });
+      const toLibSide = (s: LibraryItem): ComparisonSide => ({
+        id: s.id, label: s.name, description: s.category.replace(/_/g, ' '),
+        content: '', type: 'library', imagePath: s.image_path,
+      });
+
+      const generatedPairs: ComparisonPair[] = [];
+
+      // Group probes by surface
+      const webProbes = probes.filter((p) => p.surfaceContext !== 'app');
+      const appProbes = probes.filter((p) => p.surfaceContext === 'app');
+
+      // Within-surface AI probe comparisons
+      for (let i = 0; i < webProbes.length - 1; i += 2) {
+        generatedPairs.push({
+          left: toSide(webProbes[i]),
+          right: toSide(webProbes[i + 1]),
+          context: 'Landing Page',
+        });
+      }
+      for (let i = 0; i < appProbes.length - 1; i += 2) {
+        generatedPairs.push({
+          left: toSide(appProbes[i]),
+          right: toSide(appProbes[i + 1]),
+          context: 'Dashboard / App',
+        });
+      }
+
+      // Cross-surface comparison (if both exist)
+      if (webProbes.length > 0 && appProbes.length > 0) {
+        generatedPairs.push({
+          left: toSide(webProbes[0]),
+          right: toSide(appProbes[0]),
+          context: 'Cross-surface',
+        });
+      }
+
+      // Mixed pairs: AI probe vs library screenshot (up to 2)
+      const libSides = libraryScreenshots.slice(0, 4).map(toLibSide);
+      if (webProbes.length > 0 && libSides.length >= 1) {
+        generatedPairs.push({
+          left: toSide(webProbes[0]),
+          right: libSides[0],
+          context: 'AI direction vs Real site',
+        });
+      }
+      if (webProbes.length > 1 && libSides.length >= 2) {
+        generatedPairs.push({
+          left: toSide(webProbes[1]),
+          right: libSides[1],
+          context: 'AI direction vs Real site',
+        });
+      }
+
+      // Library vs library (if enough screenshots)
+      if (libSides.length >= 4) {
+        generatedPairs.push({
+          left: libSides[2],
+          right: libSides[3],
+          context: 'Real site vs Real site',
+        });
+      }
+
+      setPairs(generatedPairs);
+      setLoading(false);
+    });
   }, [sessionId, roundNumber]);
 
   function handleChoice(choice: Choice) {
@@ -177,7 +255,7 @@ export default function ComparePage() {
     const shouldContinue = convergence?.shouldContinue ?? (roundNumber < 3);
 
     if (shouldContinue && roundNumber < 3) {
-      router.push(`/session/${sessionId}/round/${roundNumber + 1}/questionnaire`);
+      router.push(`/session/${sessionId}/round/${roundNumber + 1}/hub`);
     } else {
       // Skip remaining rounds — go straight to compiling
       await fetch(`/api/sessions/${sessionId}`, {
@@ -198,9 +276,14 @@ export default function ComparePage() {
     );
   }
 
-  if (pairs.length === 0) {
-    // No pairs to compare — skip ahead
-    handleSubmit();
+  // No pairs to compare — skip ahead (in useEffect to avoid render-loop)
+  useEffect(() => {
+    if (!loading && pairs.length === 0) {
+      handleSubmit();
+    }
+  }, [loading, pairs.length]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  if (pairs.length === 0 && !loading) {
     return null;
   }
 
@@ -251,7 +334,7 @@ export default function ComparePage() {
                 }`}
               >
                 <div className="pointer-events-none relative h-[400px] overflow-hidden bg-white">
-                  <ProbeIframe html={currentPair.left.content} label={currentPair.left.label} />
+                  <ComparisonPreview side={currentPair.left} />
                 </div>
                 <div className="p-5">
                   <h3 className="font-semibold text-[var(--text-primary)]">{currentPair.left.label}</h3>
@@ -267,7 +350,7 @@ export default function ComparePage() {
                 }`}
               >
                 <div className="pointer-events-none relative h-[400px] overflow-hidden bg-white">
-                  <ProbeIframe html={currentPair.right.content} label={currentPair.right.label} />
+                  <ComparisonPreview side={currentPair.right} />
                 </div>
                 <div className="p-5">
                   <h3 className="font-semibold text-[var(--text-primary)]">{currentPair.right.label}</h3>

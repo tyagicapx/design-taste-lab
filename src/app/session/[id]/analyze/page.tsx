@@ -1,7 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+
+const MAX_POLL_ATTEMPTS = 90; // 3 minutes at 2s intervals
 
 export default function AnalyzePage() {
   const params = useParams();
@@ -9,8 +11,15 @@ export default function AnalyzePage() {
   const sessionId = params.id as string;
   const [status, setStatus] = useState('Starting analysis...');
   const [step, setStep] = useState(0);
+  const [pollError, setPollError] = useState(false);
+  const attemptsRef = useRef(0);
 
-  useEffect(() => {
+  const startPolling = useCallback(() => {
+    attemptsRef.current = 0;
+    setPollError(false);
+    setStep(0);
+    setStatus('Starting analysis...');
+
     // Kick off analysis
     fetch('/api/analyze', {
       method: 'POST',
@@ -20,16 +29,30 @@ export default function AnalyzePage() {
 
     // Poll for completion
     const interval = setInterval(async () => {
-      const res = await fetch(`/api/sessions/${sessionId}`);
-      const data = await res.json();
-
-      if (data.status === 'reviewing') {
+      attemptsRef.current += 1;
+      if (attemptsRef.current >= MAX_POLL_ATTEMPTS) {
         clearInterval(interval);
-        router.push(`/session/${sessionId}/review`);
+        clearInterval(stepInterval);
+        setPollError(true);
+        return;
       }
-      if (data.status === 'round_1_questionnaire') {
-        clearInterval(interval);
-        router.push(`/session/${sessionId}/round/1/questionnaire`);
+
+      try {
+        const res = await fetch(`/api/sessions/${sessionId}`);
+        const data = await res.json();
+
+        if (data.status === 'reviewing') {
+          clearInterval(interval);
+          clearInterval(stepInterval);
+          router.push(`/session/${sessionId}/review`);
+        }
+        if (data.status === 'round_1_questionnaire') {
+          clearInterval(interval);
+          clearInterval(stepInterval);
+          router.push(`/session/${sessionId}/round/1/hub`);
+        }
+      } catch {
+        // Network error — let it retry on next interval
       }
     }, 2000);
 
@@ -54,6 +77,11 @@ export default function AnalyzePage() {
       clearInterval(stepInterval);
     };
   }, [sessionId, router]);
+
+  useEffect(() => {
+    const cleanup = startPolling();
+    return cleanup;
+  }, [startPolling]);
 
   const steps = [
     'Parse references',
@@ -115,6 +143,20 @@ export default function AnalyzePage() {
           />
         </div>
         <p className="mt-3 text-sm text-[var(--text-muted)]">{status}</p>
+
+        {pollError && (
+          <div className="mt-8 rounded-2xl bg-[var(--surface-1)] p-6 text-center">
+            <p className="text-[var(--text-secondary)]">
+              Analysis is taking longer than expected.
+            </p>
+            <button
+              onClick={() => startPolling()}
+              className="mt-4 rounded-2xl bg-[var(--accent)] px-6 py-2.5 text-sm font-semibold text-[var(--bg)] transition-all hover:bg-[var(--accent-hover)]"
+            >
+              Retry
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

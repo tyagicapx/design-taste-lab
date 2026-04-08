@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createComparisonResponse, getRound } from '@/lib/db/queries';
+import { validateSessionId } from '@/lib/security';
 
 export async function POST(
   req: NextRequest,
@@ -7,7 +8,17 @@ export async function POST(
 ) {
   const { roundNumber: roundStr } = await params;
   const roundNumber = parseInt(roundStr, 10);
-  const { sessionId, probeIdLeft, probeIdRight, choice, reason } = await req.json();
+  let body;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+  }
+  const { sessionId, probeIdLeft, probeIdRight, choice, reason } = body;
+
+  if (!sessionId || !validateSessionId(sessionId)) {
+    return NextResponse.json({ error: 'Invalid session ID' }, { status: 400 });
+  }
 
   const round = getRound(sessionId, roundNumber);
   if (!round) {

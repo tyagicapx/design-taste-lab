@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 
 const COMPILATION_STEPS = [
@@ -11,13 +11,21 @@ const COMPILATION_STEPS = [
   'Generating prompt translation layer',
 ];
 
+const MAX_POLL_ATTEMPTS = 90; // 3 minutes at 2s intervals
+
 export default function CompilingPage() {
   const params = useParams();
   const router = useRouter();
   const sessionId = params.id as string;
   const [step, setStep] = useState(0);
+  const [pollError, setPollError] = useState(false);
+  const attemptsRef = useRef(0);
 
-  useEffect(() => {
+  const startPolling = useCallback(() => {
+    attemptsRef.current = 0;
+    setPollError(false);
+    setStep(0);
+
     fetch('/api/compile', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -25,11 +33,24 @@ export default function CompilingPage() {
     });
 
     const interval = setInterval(async () => {
-      const res = await fetch(`/api/sessions/${sessionId}`);
-      const data = await res.json();
-      if (data.status === 'complete') {
+      attemptsRef.current += 1;
+      if (attemptsRef.current >= MAX_POLL_ATTEMPTS) {
         clearInterval(interval);
-        router.push(`/session/${sessionId}/result`);
+        clearInterval(stepInterval);
+        setPollError(true);
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/sessions/${sessionId}`);
+        const data = await res.json();
+        if (data.status === 'complete') {
+          clearInterval(interval);
+          clearInterval(stepInterval);
+          router.push(`/session/${sessionId}/result`);
+        }
+      } catch {
+        // Network error — let it retry on next interval
       }
     }, 2000);
 
@@ -42,6 +63,11 @@ export default function CompilingPage() {
       clearInterval(stepInterval);
     };
   }, [sessionId, router]);
+
+  useEffect(() => {
+    const cleanup = startPolling();
+    return cleanup;
+  }, [startPolling]);
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center px-6">
@@ -98,6 +124,20 @@ export default function CompilingPage() {
             </div>
           ))}
         </div>
+
+        {pollError && (
+          <div className="mt-8 rounded-2xl bg-[var(--surface-1)] p-6 text-center">
+            <p className="text-[var(--text-secondary)]">
+              Compilation is taking longer than expected.
+            </p>
+            <button
+              onClick={() => startPolling()}
+              className="mt-4 rounded-2xl bg-[var(--accent)] px-6 py-2.5 text-sm font-semibold text-[var(--bg)] transition-all hover:bg-[var(--accent-hover)]"
+            >
+              Retry
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -3,11 +3,18 @@ import { compileTasteSpec } from '@/lib/modules/taste-compiler';
 import {
   acquireProcessingLock,
   releaseProcessingLock,
+  updateSessionStatus,
 } from '@/lib/db/queries';
 import { validateSessionId } from '@/lib/security';
 
 export async function POST(req: NextRequest) {
-  const { sessionId } = await req.json();
+  let body;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+  }
+  const { sessionId } = body;
 
   // CRIT-3: Validate sessionId
   if (!sessionId || !validateSessionId(sessionId)) {
@@ -28,6 +35,7 @@ export async function POST(req: NextRequest) {
       await compileTasteSpec(sessionId);
     } catch (error) {
       console.error('Compilation failed:', error);
+      updateSessionStatus(sessionId, 'error');
     } finally {
       releaseProcessingLock(sessionId);
     }
