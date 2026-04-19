@@ -22,10 +22,10 @@ Upload designs you love → run through 6 extraction methods (visual probes, "wh
 <br />
 
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Stars](https://img.shields.io/github/stars/tyagicapx/design-taste-lab?style=social)](https://github.com/tyagicapx/design-taste-lab/stargazers)
-[![Forks](https://img.shields.io/github/forks/tyagicapx/design-taste-lab?style=social)](https://github.com/tyagicapx/design-taste-lab/network/members)
-[![Issues](https://img.shields.io/github/issues/tyagicapx/design-taste-lab)](https://github.com/tyagicapx/design-taste-lab/issues)
-[![Last Commit](https://img.shields.io/github/last-commit/tyagicapx/design-taste-lab)](https://github.com/tyagicapx/design-taste-lab/commits/main)
+[![Stars](https://img.shields.io/github/stars/vb-tyagi/design-taste-lab?style=social)](https://github.com/vb-tyagi/design-taste-lab/stargazers)
+[![Forks](https://img.shields.io/github/forks/vb-tyagi/design-taste-lab?style=social)](https://github.com/vb-tyagi/design-taste-lab/network/members)
+[![Issues](https://img.shields.io/github/issues/vb-tyagi/design-taste-lab)](https://github.com/vb-tyagi/design-taste-lab/issues)
+[![Last Commit](https://img.shields.io/github/last-commit/vb-tyagi/design-taste-lab)](https://github.com/vb-tyagi/design-taste-lab/commits/main)
 [![Node](https://img.shields.io/badge/node-%3E%3D20-brightgreen)](#requirements)
 [![Next.js](https://img.shields.io/badge/Next.js-16-black)](#tech-stack)
 [![AI](https://img.shields.io/badge/AI-Claude%20%2B%20OpenAI-purple)](#tech-stack)
@@ -90,7 +90,7 @@ The output is a **12-section markdown document** with:
 ### 1. Clone & install
 
 ```bash
-git clone https://github.com/tyagicapx/design-taste-lab.git
+git clone https://github.com/vb-tyagi/design-taste-lab.git
 cd design-taste-lab
 npm install
 ```
@@ -323,8 +323,8 @@ We welcome contributions! See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the full 
 
 | Path | Good for |
 |------|----------|
-| 🐛 **Bug reports** | Found something broken? [Open an issue](https://github.com/tyagicapx/design-taste-lab/issues/new) |
-| 💡 **Feature ideas** | Have an idea? [Start a discussion](https://github.com/tyagicapx/design-taste-lab/discussions) |
+| 🐛 **Bug reports** | Found something broken? [Open an issue](https://github.com/vb-tyagi/design-taste-lab/issues/new) |
+| 💡 **Feature ideas** | Have an idea? [Start a discussion](https://github.com/vb-tyagi/design-taste-lab/discussions) |
 | 🔌 **New AI provider** | Add Gemini, Llama, Mistral — see `src/lib/ai/` |
 | 🎨 **New probe types** | Mobile screens, dashboards, email templates — see `src/lib/prompts/probe-generation.ts` |
 | 📐 **New taste axes** | Add more dimensions — see `src/lib/taste-axes.ts` |
@@ -334,7 +334,7 @@ We welcome contributions! See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the full 
 ### Development setup
 
 ```bash
-git clone https://github.com/tyagicapx/design-taste-lab.git
+git clone https://github.com/vb-tyagi/design-taste-lab.git
 cd design-taste-lab
 npm install
 cp .env.example .env.local
@@ -342,7 +342,7 @@ cp .env.example .env.local
 npm run dev
 ```
 
-Look for issues labeled [`good first issue`](https://github.com/tyagicapx/design-taste-lab/labels/good%20first%20issue) to get started.
+Look for issues labeled [`good first issue`](https://github.com/vb-tyagi/design-taste-lab/labels/good%20first%20issue) to get started.
 
 <p align="right"><a href="#-table-of-contents">↑ back to top</a></p>
 
@@ -361,7 +361,7 @@ Look for issues labeled [`good first issue`](https://github.com/tyagicapx/design
 - [ ] Additional AI providers (Gemini text, Llama, Mistral)
 - [ ] Docs site with tutorials
 
-> Have an idea? [Open a discussion](https://github.com/tyagicapx/design-taste-lab/discussions) or [submit a PR](https://github.com/tyagicapx/design-taste-lab/pulls).
+> Have an idea? [Open a discussion](https://github.com/vb-tyagi/design-taste-lab/discussions) or [submit a PR](https://github.com/vb-tyagi/design-taste-lab/pulls).
 
 <p align="right"><a href="#-table-of-contents">↑ back to top</a></p>
 

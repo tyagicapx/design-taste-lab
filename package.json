@@ -4,13 +4,13 @@
   "description": "Extract, test, and codify your design taste into a reusable spec. AI-powered calibration with visual probes.",
   "license": "MIT",
   "author": "Design Taste Lab Contributors",
-  "homepage": "https://github.com/tyagicapx/design-taste-lab",
+  "homepage": "https://github.com/vb-tyagi/design-taste-lab",
   "repository": {
     "type": "git",
-    "url": "https://github.com/tyagicapx/design-taste-lab.git"
+    "url": "https://github.com/vb-tyagi/design-taste-lab.git"
   },
   "bugs": {
-    "url": "https://github.com/tyagicapx/design-taste-lab/issues"
+    "url": "https://github.com/vb-tyagi/design-taste-lab/issues"
   },
   "keywords": [
     "design-tools",
