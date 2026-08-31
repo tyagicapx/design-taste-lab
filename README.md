@@ -32,8 +32,6 @@ Upload designs you love → run through 6 extraction methods (visual probes, "wh
 
 <br />
 
-### 🔗 [**Live Demo →**](https://design-taste-demo.up.railway.app)
-
 [**Quickstart**](#-quickstart) · [**Features**](#-features) · [**How It Works**](#-how-it-works) · [**Sample Output**](#-sample-output) · [**Contributing**](#-contributing) · [**Roadmap**](#-roadmap)
 
 </div>
